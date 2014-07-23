@@ -26,6 +26,12 @@
  */
 
 /*
+ * Validator definition
+ *
+ */
+$XSD_VALIDATOR = "./xsd-validator/xsdv.sh";
+
+/*
  * writeXML function to produce XML output
  *
  */
@@ -142,7 +148,7 @@ file_put_contents("$metadata", file_get_contents("$filename"));
  * validate metadata
  *
  */
-$command = "./xsd-validator/xsdv.sh $xmlschema $metadata";
+$command = "$XSD_VALIDATOR xsd/$xmlschema $metadata";
 exec($command, $output);
 
 foreach($output as $line)
@@ -155,7 +161,6 @@ if(preg_match("/validates/", $message)) {
 } else {
     $returncode = 2;
 }
-
 
 /*
  * validation result
