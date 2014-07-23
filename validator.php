@@ -83,9 +83,15 @@ $info = array(
         0 => "Technical contact is present.",
         2 => "Technical contact is missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
     ),
+
     "uiinfo" => array(
         0 => "OK",
         2 => "Error",
+    ),
+
+    "endpoints-entityID" => array(
+        0 => "Endpoints and entityID are all HTTPS.",
+        2 => "Endpoints and entityID are required to be HTTPS! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
     ),
 );
 
@@ -126,6 +132,10 @@ if(!$validator) {
 
         case "uiinfo":
             $xmlschema = "uiinfo.xsd";
+            break;
+
+        case "endpoints-entityID":
+            $xmlschema = "endpoints-entityID.xsd";
             break;
 
         default:
