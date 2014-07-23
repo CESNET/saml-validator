@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema
+    targetNamespace="urn:oasis:names:tc:SAML:2.0:metadata"
+    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+    xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
+        schemaLocation="xmldsig-core-schema.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            Document identifier: tech-c.xsd
+            Document location: 
+            Revision history:
+                V1.0 (May 28, 2014): Initial revision
+        </xs:documentation>
+    </xs:annotation>
+
+    <!-- contactTypeType -->
+    <xs:simpleType name="contactTypeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="administrative"/>
+            <xs:enumeration value="billing"/>
+            <xs:enumeration value="other"/>
+            <xs:enumeration value="support"/>
+            <xs:enumeration value="technical"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <!-- contactTypeType -->
+
+    <!-- contactTypeTechnicalType -->
+    <xs:simpleType name="contactTypeTechnicalType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="technical"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <!-- contactTypeTechnicalType -->
+
+    <!-- EntityDescriptor -->
+    <xs:element name="EntityDescriptor">
+        <xs:complexType>
+            <xs:sequence>
+
+                <!-- ds:Signature -->
+                <xs:element ref="ds:Signature" minOccurs="0"/>
+                <!-- ds:Signature -->
+
+                <!-- Extensions: eduidmd:RepublishRequest -->
+                <xs:element name="Extensions" minOccurs="0" maxOccurs="1"/>
+                <!-- Extensions: eduidmd:RepublishRequest -->
+
+                <xs:element name="IDPSSODescriptor" minOccurs="0"/>
+                <xs:element name="SPSSODescriptor" minOccurs="0"/>
+                <xs:element name="AttributeAuthorityDescriptor" minOccurs="0"/>
+                <xs:element name="Organization"/>
+
+                <!-- ContactPerson/technical -->
+                <xs:element name="ContactPerson">
+                    <xs:complexType>
+                        <xs:sequence>
+
+                            <xs:element name="GivenName" type="xs:string" minOccurs="0"/>
+                            <xs:element name="SurName" type="xs:string" minOccurs="0"/>
+                            <xs:element name="EmailAddress" type="xs:string"/>
+
+                        </xs:sequence>
+
+                        <xs:attribute name="contactType" type="md:contactTypeType"/>
+
+                    </xs:complexType>
+                </xs:element>
+                <!-- ContactPerson/technical -->
+
+                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+
+            </xs:sequence>
+
+            <xs:anyAttribute processContents="lax"/>
+
+        </xs:complexType>
+    </xs:element>
+    <!-- EntityDescriptor -->
+
+</xs:schema>
+
