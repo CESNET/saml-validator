@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema
+    targetNamespace="urn:oasis:names:tc:SAML:2.0:metadata"
+    xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
+        schemaLocation="xmldsig-core-schema.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            Document identifier: multiple-org-1.0.xsd
+            Document location: http://www.eduid.cz/saml/xsd/
+            Revision history:
+                V1.0 (May XX, 2014): Initial revision
+        </xs:documentation>
+    </xs:annotation>
+
+    <!-- EntityDescriptor -->
+    <xs:element name="EntityDescriptor">
+        <xs:complexType>
+            <xs:sequence>
+
+                <xs:element ref="ds:Signature" minOccurs="0"/>
+                <xs:element name="Extensions" minOccurs="0"/>
+                <xs:element name="IDPSSODescriptor" minOccurs="0"/>
+                <xs:element name="SPSSODescriptor" minOccurs="0"/>
+                <xs:element name="AttributeAuthorityDescriptor" minOccurs="0"/>
+                <xs:element name="Organization" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="ContactPerson" maxOccurs="unbounded"/>
+
+            </xs:sequence>
+
+            <xs:anyAttribute processContents="lax"/>
+
+        </xs:complexType>
+    </xs:element>
+    <!-- EntityDescriptor -->
+
+</xs:schema>
+

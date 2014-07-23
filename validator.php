@@ -93,6 +93,11 @@ $info = array(
         0 => "Endpoints and entityID are all HTTPS.",
         2 => "Endpoints and entityID are required to be HTTPS! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
     ),
+
+    "organization" => array(
+        0 => "Organization defined.",
+        2 => "Organization definition missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+    ),
 );
 
 /*
@@ -136,6 +141,10 @@ if(!$validator) {
 
         case "endpoints-entityID":
             $xmlschema = "endpoints-entityID.xsd";
+            break;
+
+        case "organization":
+            $xmlschema = "organization.xsd";
             break;
 
         default:
