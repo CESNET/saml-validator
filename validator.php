@@ -135,6 +135,16 @@ if(!$validator) {
 }
 
 /*
+ * debug option
+ *
+ */
+$DEBUG = $_GET['DEBUG'];
+
+if($DEBUG) {
+    $DEBUG = filter_var($DEBUG, FILTER_SANITIZE_NUMBER_INT);
+}
+
+/*
  * fetch metadata
  *
  */
@@ -156,11 +166,13 @@ foreach($output as $line)
 
 if(preg_match("/validates/", $message)) {
     $returncode = 0;
-    $message = "";
 
 } else {
     $returncode = 2;
 }
+
+if($_GET[DEBUG] != 1)
+    $message = "";
 
 /*
  * validation result
