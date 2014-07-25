@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema
+    targetNamespace="urn:oasis:names:tc:SAML:metadata:ui"
+    xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified">
+
+    <xs:annotation>
+        <xs:documentation>
+            Document identifier: mdui.xsd
+            Document location: http://www.eduid.cz/saml/xsd/
+            Document history:
+                V1.0 (May XX, 2014): Initial revision
+        </xs:documentation>
+    </xs:annotation>
+
+    <!-- UIInfo -->
+    <xs:element name="UIInfo">
+        <xs:complexType>
+            <xs:sequence>
+            <!--
+            <xs:choice maxOccurs="unbounded">
+            -->
+
+                <!--
+                <xs:element name="DisplayName"/>
+                <xs:element name="Description"/>
+                <xs:element name="InformationURL"/>
+                <xs:element name="PrivacyStatementURL"/>
+                <xs:element name="Keywords"/>
+                <xs:element name="Logo"/>
+                -->
+
+                <xs:element name="DisplayName" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="Description" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="InformationURL" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="PrivacyStatementURL" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="Keywords" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="Logo" minOccurs="0" maxOccurs="unbounded" type="mdui:LogoType"/>
+
+            </xs:sequence>
+            <!--
+            </xs:choice>
+            -->
+        </xs:complexType>
+    </xs:element>
+    <!-- UIInfo -->
+
+    <!-- LogoType -->
+    <xs:complexType name="LogoType">
+        <xs:simpleContent>
+            <xs:extension base="mdui:httpsURLType">
+                <xs:anyAttribute processContents="lax"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <!-- LogoType -->
+
+    <!-- httpsURLType -->
+    <xs:simpleType name="httpsURLType">
+        <xs:restriction base="xs:anyURI">
+            <xs:pattern value="https://.+\..+"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <!-- httpsURLType -->
+
+</xs:schema>
+
