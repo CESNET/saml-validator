@@ -98,6 +98,16 @@ $info = array(
         0 => "Organization defined.",
         2 => "Organization definition missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
     ),
+
+    "republish-target" => array(
+        0 => "Republish Target defined correctly or missing (which is OK).",
+        2 => "Republish Target misconfigured! For more info, see https://www.eduid.cz/cs/tech/metadata-profile"
+    ),
+
+    "certificate" => array(
+        0 => "Certificate present.",
+        2 => "Certificate missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+    ),
 );
 
 /*
