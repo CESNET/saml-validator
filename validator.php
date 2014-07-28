@@ -85,8 +85,8 @@ $info = array(
     ),
 
     "uiinfo" => array(
-        0 => "OK",
-        2 => "Error",
+        0 => "UIInfo defined.",
+        2 => "UIInfo undefined! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
     ),
 
     "endpoints-entityID" => array(
