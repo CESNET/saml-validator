@@ -8,6 +8,8 @@ For now, there are following validators available:
   * uiinfo
   * endpoints-entityID
   * organization
+  * republish-target
+  * certificate
 
 A few other validators are currently being rewritten and tweaked in order to be incorporated into SAML-Validators very soon.
 
