@@ -18,31 +18,31 @@
     <!-- UIInfo -->
     <xs:element name="UIInfo">
         <xs:complexType>
-            <xs:sequence>
             <!--
-            <xs:choice maxOccurs="unbounded">
+            <xs:sequence>
             -->
+            <xs:choice maxOccurs="unbounded">
 
-                <!--
                 <xs:element name="DisplayName"/>
                 <xs:element name="Description"/>
                 <xs:element name="InformationURL"/>
                 <xs:element name="PrivacyStatementURL"/>
                 <xs:element name="Keywords"/>
                 <xs:element name="Logo"/>
-                -->
 
+                <!--
                 <xs:element name="DisplayName" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="Description" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="InformationURL" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="PrivacyStatementURL" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="Keywords" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="Logo" minOccurs="0" maxOccurs="unbounded" type="mdui:LogoType"/>
+                -->
 
-            </xs:sequence>
             <!--
-            </xs:choice>
+            </xs:sequence>
             -->
+            </xs:choice>
         </xs:complexType>
     </xs:element>
     <!-- UIInfo -->
