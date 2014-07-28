@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema
+    targetNamespace="http://eduid.cz/schema/metadata/1.0"
+    xmlns:emd="http://eduid.cz/schema/metadata/1.0"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="qualified"
+    version="1.0">
+
+    <xs:import namespace="urn:oasis:names:tc:SAML:2.0:metadata"
+        schemaLocation="saml-schema-metadata-2.0.xsd"/>
+
+    <xs:import namespace="urn:oasis:names:tc:SAML:metadata:ui"
+        schemaLocation="sstc-saml-metadata-ui-v1.0.xsd"/>
+
+    <xs:simpleType name="RepublishTargetType">
+        <xs:restriction base="xs:anyURI">
+            <xs:enumeration value="http://edugain.org/">
+                <xs:annotation>
+                    <xs:documentation>
+                        Request export EntityDescriptor in eduGAIN.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="RepublishRequest">
+        <xs:annotation>
+            <xs:documentation>
+                Request the federation metadata aggregator to republish the enclosing EntityDescriptor to other aggregator(s).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="RepublishTarget" type="emd:RepublishTargetType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
+

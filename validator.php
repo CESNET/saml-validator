@@ -147,6 +147,10 @@ if(!$validator) {
             $xmlschema = "organization.xsd";
             break;
 
+        case "republish-target":
+            $xmlschema = "republish-target.xsd";
+            break;
+
         default:
             writeXML($error['nonexistent_validator']['code'], $error['nonexistent_validator']['info']);
             exit;
