@@ -21,6 +21,13 @@ $ mkdir /var/www/saml-validators/
 $ git clone https://github.com/JanOppolzer/saml-validators.git /var/www/saml-validators/
 ```
 
+You might prefer to disable directory listing by adding the following lines to your Apache configuration. (Do not forget to alter the path to your SAML-Validators.)
+
+```apache
+<Directory /var/www/saml-validators/>
+    Options -Indexes
+</Directory>
+```
 
 
 
