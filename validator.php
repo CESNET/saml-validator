@@ -26,9 +26,11 @@
  */
 
 /*
- * Validator definition
+ * Variable definitions
  *
  */
+$KEY_SIZE = 2048;
+$VALIDITY = 6*30*24*60*60;
 $XSD_VALIDATOR = "./xsd-validator/xsdv.sh";
 
 /*
@@ -66,13 +68,13 @@ function certificateCheck($metadata) {
         $cert_date = date("Y-m-d H:i:s", $cert_info[validTo_time_t]);
         $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
 
-        if(($pub_key[bits] >= 2048) && (($cert_info[validTo_time_t]-30*24*60*60) > date("U"))) {
+        if(($pub_key[bits] >= $GLOBALS['KEY_SIZE']) && (($cert_info[validTo_time_t]-$GLOBALS['VALIDITY']) > date("U"))) {
             $returncode = 0;
         } else {
             $returncode = 2;
         }
 
-        $message = "Certificate: " . $cert_info[name] . ", Valid to: " . $cert_date;
+        $message = "Certificate: " . $cert_info[name] . ", Key size: " . $pub_key[bits] . ", Valid to: " . $cert_date;
     }
 
     return array($returncode, $message);
