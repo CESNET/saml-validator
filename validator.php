@@ -52,6 +52,38 @@ function writeXML($returncode, $info, $message) {
 }
 
 /*
+ * certificate check function
+ *
+ */
+function certificateCheck($metadata) {
+    $sxe = new SimpleXMLElement(file_get_contents($metadata));
+    $sxe->registerXPathNamespace('ds','http://www.w3.org/2000/09/xmldsig#');
+    $result = $sxe->xpath('//ds:X509Certificate');
+
+    foreach($result as $cert) {
+        $X509Certificate = "-----BEGIN CERTIFICATE-----\n" . trim($cert) . "\n-----END CERTIFICATE-----";
+        $cert_info = openssl_x509_parse($X509Certificate, true);
+        $cert_date = date("Y-m-d H:i:s", $cert_info[validTo_time_t]);
+        $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
+
+        if(($pub_key[bits] >= 2048) && (($cert_info[validTo_time_t]-30*24*60*60) > date("U"))) {
+            $returncode = 0;
+            $message = $cert_date;
+        } else {
+            $returncode = 2;
+            $message = $cert_date;
+        }
+
+        $message = "Certificate: " . $cert_info[name] . ", Valid to: " . $cert_date;
+
+        #echo "1) " . $pub_key[bits] . "; 2) " . $cert_date . "; 3) " . $cert_info[name] . "\n";
+    }
+
+    return array($returncode, $message);
+}
+
+
+/*
  * error messages definitions
  *
  */
@@ -108,6 +140,11 @@ $info = array(
         0 => "Certificate present.",
         2 => "Certificate missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
     ),
+
+    "certificate-check" => array(
+        0 => "Certificate key size and validity correct.",
+        2 => "Certificate key size or validity incorrect! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+    ),
 );
 
 /*
@@ -139,36 +176,6 @@ if(!$validator) {
 
 } else {
     $validator = filter_var($validator, FILTER_SANITIZE_STRING);
-
-    switch($validator) {
-        case "tech-c":
-            $xmlschema = "tech-c.xsd";
-            break;
-
-        case "uiinfo":
-            $xmlschema = "uiinfo.xsd";
-            break;
-
-        case "endpoints-entityID":
-            $xmlschema = "endpoints-entityID.xsd";
-            break;
-
-        case "organization":
-            $xmlschema = "organization.xsd";
-            break;
-
-        case "republish-target":
-            $xmlschema = "republish-target.xsd";
-            break;
-
-        case "certificate":
-            $xmlschema = "certificate.xsd";
-            break;
-
-        default:
-            writeXML($error['nonexistent_validator']['code'], $error['nonexistent_validator']['info']);
-            exit;
-    }
 }
 
 /*
@@ -192,24 +199,65 @@ $metadata = "tmp/" . $encoded_entityid . ".xml";
 file_put_contents("$metadata", file_get_contents("$filename"));
 
 /*
- * validate metadata
+ * select validator (XSD, etc.)
  *
  */
-$command = "$XSD_VALIDATOR xsd/$xmlschema $metadata";
-exec($command, $output);
+switch($validator) {
+    case "tech-c":
+        $xmlschema = "tech-c.xsd";
+        break;
 
-foreach($output as $line)
-    $message .= $line;
+    case "uiinfo":
+        $xmlschema = "uiinfo.xsd";
+        break;
 
-if(preg_match("/validates/", $message)) {
-    $returncode = 0;
+    case "endpoints-entityID":
+        $xmlschema = "endpoints-entityID.xsd";
+        break;
 
-} else {
-    $returncode = 2;
+    case "organization":
+        $xmlschema = "organization.xsd";
+        break;
+
+    case "republish-target":
+        $xmlschema = "republish-target.xsd";
+        break;
+
+    case "certificate":
+        $xmlschema = "certificate.xsd";
+        break;
+
+    case "certificate-check":
+        list($returncode, $message) = certificateCheck($metadata);
+        break;
+
+    default:
+        writeXML($error['nonexistent_validator']['code'], $error['nonexistent_validator']['info']);
+        exit;
 }
 
-if($_GET[DEBUG] != 1)
-    $message = "";
+/*
+ * validate metadata using XML Schema
+ *
+ */
+
+if($xmlschema) {
+    $command = "$XSD_VALIDATOR xsd/$xmlschema $metadata";
+    exec($command, $output);
+
+    foreach($output as $line)
+        $message .= $line;
+
+    if(preg_match("/validates/", $message)) {
+        $returncode = 0;
+
+    } else {
+        $returncode = 2;
+    }
+
+    if($_GET[DEBUG] != 1)
+        $message = "";
+}
 
 /*
  * validation result
