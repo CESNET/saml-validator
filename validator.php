@@ -255,7 +255,7 @@ if($xmlschema) {
         $returncode = 2;
     }
 
-    if($_GET[DEBUG] != 1)
+    if($DEBUG != 1)
         $message = "";
 }
 
