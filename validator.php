@@ -72,9 +72,6 @@ function certificateCheck($metadata) {
             $returncode = 0;
         } else {
             $returncode = 2;
-        }
-
-        if($GLOBALS['DEBUG'] == 1) {
             $message = "Certificate: " . $cert_info[name] . ", Key size: " . $pub_key[bits] . ", Valid to: " . $cert_date;
         }
     }
@@ -179,16 +176,6 @@ if(!$validator) {
 }
 
 /*
- * debug option
- *
- */
-$DEBUG = $_GET['DEBUG'];
-
-if($DEBUG) {
-    $DEBUG = filter_var($DEBUG, FILTER_SANITIZE_NUMBER_INT);
-}
-
-/*
  * fetch metadata
  *
  */
@@ -250,13 +237,11 @@ if($xmlschema) {
 
     if(preg_match("/validates/", $message)) {
         $returncode = 0;
+        $message = "";
 
     } else {
         $returncode = 2;
     }
-
-    if($DEBUG != 1)
-        $message = "";
 }
 
 /*
