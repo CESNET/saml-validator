@@ -10,6 +10,7 @@ For now, there are following validators available:
   * organization
   * republish-target
   * certificate
+  * certificate-check
 
 A few other validators are currently being rewritten and tweaked in order to be incorporated into SAML-Validators very soon.
 
