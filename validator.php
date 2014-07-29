@@ -68,15 +68,11 @@ function certificateCheck($metadata) {
 
         if(($pub_key[bits] >= 2048) && (($cert_info[validTo_time_t]-30*24*60*60) > date("U"))) {
             $returncode = 0;
-            $message = $cert_date;
         } else {
             $returncode = 2;
-            $message = $cert_date;
         }
 
         $message = "Certificate: " . $cert_info[name] . ", Valid to: " . $cert_date;
-
-        #echo "1) " . $pub_key[bits] . "; 2) " . $cert_date . "; 3) " . $cert_info[name] . "\n";
     }
 
     return array($returncode, $message);
