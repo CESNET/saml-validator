@@ -74,7 +74,9 @@ function certificateCheck($metadata) {
             $returncode = 2;
         }
 
-        $message = "Certificate: " . $cert_info[name] . ", Key size: " . $pub_key[bits] . ", Valid to: " . $cert_date;
+        if($GLOBALS['DEBUG'] == 1) {
+            $message = "Certificate: " . $cert_info[name] . ", Key size: " . $pub_key[bits] . ", Valid to: " . $cert_date;
+        }
     }
 
     return array($returncode, $message);
