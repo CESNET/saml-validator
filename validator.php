@@ -12,7 +12,7 @@
  *
  * As a XML validator, XSD-Validator [2] by Adrian Mouat [3,4] is deployed.
  *
- * SAML-Validator (XML schemas, PHP, etc.) is written by Jan Oppolzer [5] from
+ * SAML-Validators (XML schemas, PHP, etc.) is written by Jan Oppolzer [5] from
  * CESNET [6] and can be obtained from GitHub repository [7].
  *
  * [1] http://jagger.heanet.ie/
@@ -21,7 +21,7 @@
  * [4] http://www.adrianmouat.com/
  * [5] jan.oppolzer@cesnet.cz
  * [6] https://www.cesnet.cz/
- * [7] https://github.com/JanOppolzer/saml-validator/
+ * [7] https://github.com/JanOppolzer/saml-validators/
  *
  */
 
