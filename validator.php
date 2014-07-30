@@ -30,7 +30,7 @@
  *
  */
 $KEY_SIZE = 2048;
-$VALIDITY = 6*30*24*60*60;
+$CERTIFICATE_VALIDITY = 300;
 $XSD_VALIDATOR = "./xsd-validator/xsdv.sh";
 
 /*
@@ -65,14 +65,22 @@ function certificateCheck($metadata) {
     foreach($result as $cert) {
         $X509Certificate = "-----BEGIN CERTIFICATE-----\n" . trim($cert) . "\n-----END CERTIFICATE-----";
         $cert_info = openssl_x509_parse($X509Certificate, true);
-        $cert_date = date("Y-m-d H:i:s", $cert_info[validTo_time_t]);
+        $cert_validTo = date("Y-m-d", $cert_info[validTo_time_t]);
+        $cert_validFor = floor((strtotime($cert_validTo)-time())/(60*60*24));
         $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
+        $pub_key[bits] = 1024;
 
-        if(($pub_key[bits] >= $GLOBALS['KEY_SIZE']) && (($cert_info[validTo_time_t]-$GLOBALS['VALIDITY']) > date("U"))) {
+        if(($pub_key[bits] >= $GLOBALS['KEY_SIZE']) && ($cert_validFor >= $GLOBALS['CERTIFICATE_VALIDITY'])) {
             $returncode = 0;
+        } elseif(($pub_key[bits] < $GLOBALS['KEY_SIZE']) && ($cert_validFor >= $GLOBALS['CERTIFICATE_VALIDITY'])) {
+            $returncode = 2;
+            $message = "Public key size has to be greater than or equal to " . $GLOBALS['KEY_SIZE'] . ". Yours is " . $pub_key[bits] . ".";
+        } elseif(($pub_key[bits] >= $GLOBALS['KEY_SIZE']) && ($cert_validFor < $GLOBALS['CERTIFICATE_VALIDITY'])) {
+            $returncode = 2;
+            $message = "Certificate should be valid at least for " . $GLOBALS['CERTIFICATE_VALIDITY'] . " days. Yours is valid only for " . $cert_validFor . ".";
         } else {
             $returncode = 2;
-            $message = "Certificate: " . $cert_info[name] . ", Key size: " . $pub_key[bits] . ", Valid to: " . $cert_date;
+            $message = "Certificate should be valid at least for " . $GLOBALS['CERTIFICATE_VALIDITY'] . " days. Yours is valid only for " . $cert_validFor . ". And public key size has to be greater than or equal to " . $GLOBALS['KEY_SIZE'] . " bits. Yours is " . $pub_key[bits] . ".";
         }
     }
 
