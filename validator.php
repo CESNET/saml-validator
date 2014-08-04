@@ -25,19 +25,68 @@
  *
  */
 
-/*
- * Variable definitions
- *
+/* variable definitions
  */
-$KEY_SIZE = 2048;
-$CERTIFICATE_VALIDITY = 300;
-$XSD_VALIDATOR = "./xsd-validator/xsdv.sh";
+$KEY_SIZE               = 2048; # bits
+$CERTIFICATE_VALIDITY   = 300;  # days
+$XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
 
-/*
- * writeXML function to produce XML output
- *
+/* validators
  */
-function writeXML($returncode, $info, $message) {
+$VALIDATORS = array(
+    "tech-c" => array(
+        "enabled" => 1,
+        "xmlschema" => "tech-c.xsd",
+        "info" => array(
+            0 => "Technical contact is present.",
+            2 => "Technical contact is missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+        ),
+    ),
+    "uiinfo" => array(
+        "enabled" => 1,
+        "xmlschema" => "uiinfo.xsd",
+        "info" => array(
+            0 => "UIInfo defined.",
+            2 => "UIInfo undefined! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+        ),
+    ),
+    "endpoints-entityID" => array(
+        "enabled" => 1,
+        "xmlschema" => "endpoints-entityID.xsd",
+        "info" => array(
+            0 => "Endpoints and entityID are all HTTPS.",
+            2 => "Endpoints and entityID are required to be HTTPS! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+        ),
+    ),
+    "organization" => array(
+        "enabled" => 1,
+        "xmlschema" => "organization.xsd",
+        "info" => array(
+            0 => "Organization defined.",
+            2 => "Organization definition missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+        ),
+    ),
+    "republish-target" => array(
+        "enabled" => 1,
+        "xmlschema" => "republish-target.xsd",
+        "info" => array(
+            0 => "Republish Target defined correctly or missing (which is OK).",
+            2 => "Republish Target misconfigured! For more info, see https://www.eduid.cz/cs/tech/metadata-profile"
+        ),
+    ),
+    "certificate" => array(
+        "enabled" => 1,
+        "xmlschema" => "certificate.xsd",
+        "info" => array(
+            0 => "Certificate present.",
+            2 => "Certificate missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
+        ),
+    ),
+);
+
+/* writeXML function to produce XML output
+ */
+function writeXML($returncode, $validations) {
     $w = new XMLWriter();
     $w->openURI('php://output');
     $w->startDocument('1.0', 'utf-8');
@@ -45,17 +94,40 @@ function writeXML($returncode, $info, $message) {
 
     $w->startElement('validation');
         $w->writeElement('returncode', $returncode);
-        $w->writeElement('info', $info);
-        $w->writeElement('message', $message);
+        foreach($validations as $result => $validator) {
+            $w->writeElement('info', $GLOBALS[VALIDATORS][$result][info][$validator[returncode]]);
+        }
+        foreach($validations as $validation) {
+            if(!empty($validation[message]))
+                $w->writeElement('message', $validation[message]);
+        }
     $w->endElement();
 
     $w->endDocument();
     $w->flush();
 }
 
-/*
- * certificate check function
- *
+/* validate (using XML Schema) function
+ */
+function validateMetadata($metadata, $xmlschema) {
+    $command = "$GLOBALS[XSD_VALIDATOR] xsd/$xmlschema $metadata";
+    exec($command, $output);
+
+    foreach($output as $line)
+        $message .= $line;
+
+    if(preg_match("/validates/", $message)) {
+        $returncode = 0;
+        $message = "";
+
+    } else {
+        $returncode = 2;
+    }
+
+    return array($returncode, $message);
+}
+
+/* certificate check function
  */
 function certificateCheck($metadata) {
     $sxe = new SimpleXMLElement(file_get_contents($metadata));
@@ -88,9 +160,7 @@ function certificateCheck($metadata) {
 }
 
 
-/*
- * error messages definitions
- *
+/* error messages definitions
  */
 $error = array(
     "no_URL" => array(
@@ -101,60 +171,18 @@ $error = array(
         "code"  => 2,
         "info"  => "Invalid metadata URL supplied in HTTP GET variable `filename'.",
     ),
-    "no_validator" => array(
-        "code"  => 2,
-        "info"  => "No validator selected in HTTP GET variable `validator'.",
-    ),
-    "nonexistent_validator" => array(
-        "code"  => 2,
-        "info"  => "Non-existent validator selected in HTTP GET variable `validator'.",
-    ),
 );
 
-/*
- * output texts definitions
- *
+/* output texts definitions
  */
 $info = array(
-    "tech-c" => array(
-        0 => "Technical contact is present.",
-        2 => "Technical contact is missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
-    ),
-
-    "uiinfo" => array(
-        0 => "UIInfo defined.",
-        2 => "UIInfo undefined! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
-    ),
-
-    "endpoints-entityID" => array(
-        0 => "Endpoints and entityID are all HTTPS.",
-        2 => "Endpoints and entityID are required to be HTTPS! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
-    ),
-
-    "organization" => array(
-        0 => "Organization defined.",
-        2 => "Organization definition missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
-    ),
-
-    "republish-target" => array(
-        0 => "Republish Target defined correctly or missing (which is OK).",
-        2 => "Republish Target misconfigured! For more info, see https://www.eduid.cz/cs/tech/metadata-profile"
-    ),
-
-    "certificate" => array(
-        0 => "Certificate present.",
-        2 => "Certificate missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
-    ),
-
     "certificate-check" => array(
         0 => "Certificate key size and validity correct.",
         2 => "Certificate key size or validity incorrect! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
     ),
 );
 
-/*
- * metadata URL check
- *
+/* metadata URL check
  */
 $filename  = $_GET["filename"];
 
@@ -169,23 +197,7 @@ if(!$filename) {
     }
 }
 
-/*
- * validator check
- *
- */
-$validator = $_GET["validator"];
-
-if(!$validator) {
-    writeXML($error['no_validator']['code'], $error['no_validator']['info']);
-    exit;
-
-} else {
-    $validator = filter_var($validator, FILTER_SANITIZE_STRING);
-}
-
-/*
- * fetch metadata
- *
+/* fetch metadata
  */
 $URLsplit = explode("/", $filename);
 $encoded_entityid = $URLsplit[count($URLsplit)-2];
@@ -193,74 +205,31 @@ $metadata = "tmp/" . $encoded_entityid . ".xml";
 
 file_put_contents("$metadata", file_get_contents("$filename"));
 
-/*
- * select validator (XSD, etc.)
- *
+/* run enabled validators
  */
-switch($validator) {
-    case "tech-c":
-        $xmlschema = "tech-c.xsd";
-        break;
+$validations = array();
+foreach($VALIDATORS as $validator => $value) {
+    if($VALIDATORS[$validator][enabled] == 1) {
+        list($returncode, $message) = validateMetadata($metadata, $VALIDATORS[$validator][xmlschema]);
 
-    case "uiinfo":
-        $xmlschema = "uiinfo.xsd";
-        break;
+        $result = array(
+            "returncode" => $returncode,
+            "message" => $message,
+        );
 
-    case "endpoints-entityID":
-        $xmlschema = "endpoints-entityID.xsd";
-        break;
-
-    case "organization":
-        $xmlschema = "organization.xsd";
-        break;
-
-    case "republish-target":
-        $xmlschema = "republish-target.xsd";
-        break;
-
-    case "certificate":
-        $xmlschema = "certificate.xsd";
-        break;
-
-    case "certificate-check":
-        list($returncode, $message) = certificateCheck($metadata);
-        break;
-
-    default:
-        writeXML($error['nonexistent_validator']['code'], $error['nonexistent_validator']['info']);
-        exit;
-}
-
-/*
- * validate metadata using XML Schema
- *
- */
-
-if($xmlschema) {
-    $command = "$XSD_VALIDATOR xsd/$xmlschema $metadata";
-    exec($command, $output);
-
-    foreach($output as $line)
-        $message .= $line;
-
-    if(preg_match("/validates/", $message)) {
-        $returncode = 0;
-        $message = "";
-
-    } else {
-        $returncode = 2;
+        $validations[$validator] = $result;
     }
 }
 
-/*
- * validation result
- *
+/* validation result
  */
-writeXML($returncode, $info[$validator][$returncode], $message);
+$returncode_max = -1;
+foreach($validations as $validation) {
+    $returncode = max($returncode_max, $validation['returncode']);
+}
+writeXML($returncode, $validations);
 
-/*
- * delete temporary XML file with metadata
- *
+/* delete temporary XML file with metadata
  */
 exec("rm -f $metadata");
 
