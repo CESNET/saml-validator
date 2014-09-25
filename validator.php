@@ -27,8 +27,8 @@
 
 /* variable definitions
  */
-$KEY_SIZE               = 2048; # bits
-$CERTIFICATE_VALIDITY   = 300;  # days
+$KEY_SIZE               = 1024; # bits
+$CERTIFICATE_VALIDITY   = 180;  # days
 $XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
 
 /* validators
@@ -86,7 +86,7 @@ $VALIDATORS = array(
 
 /* writeXML function to produce XML output
  */
-function writeXML($returncode, $validations) {
+function writeXML($returncode, $validations, $debug = 0) {
     $w = new XMLWriter();
     $w->openURI('php://output');
     $w->startDocument('1.0', 'utf-8');
@@ -95,7 +95,9 @@ function writeXML($returncode, $validations) {
     $w->startElement('validation');
         $w->writeElement('returncode', $returncode);
         foreach($validations as $result => $validator) {
-            $w->writeElement('info', $GLOBALS[VALIDATORS][$result][info][$validator[returncode]]);
+            if($debug === 1 && !empty($GLOBALS[VALIDATORS][$result][info][$validator[returncode]])) {
+                $w->writeElement('info', $GLOBALS[VALIDATORS][$result][info][$validator[returncode]]);
+            }
         }
         foreach($validations as $validation) {
             if(!empty($validation[message]))
@@ -184,7 +186,7 @@ $info = array(
 
 /* metadata URL check
  */
-$filename  = $_GET["filename"];
+$filename = $_GET["filename"];
 
 if(!$filename) {
     writeXML($error['no_URL']['code'], $error['no_URL']['info']);
@@ -197,6 +199,14 @@ if(!$filename) {
     }
 }
 
+/* debug: show <info> elements even for success validations
+ */
+$debug = $_GET["debug"];
+
+if(!empty($debug)) {
+    $debug = 1;
+}
+
 /* fetch metadata
  */
 $URLsplit = explode("/", $filename);
@@ -205,7 +215,7 @@ $metadata = "tmp/" . $encoded_entityid . ".xml";
 
 file_put_contents("$metadata", file_get_contents("$filename"));
 
-/* run enabled validators
+/* run enabled validators (against XML Schemas)
  */
 $validations = array();
 foreach($VALIDATORS as $validator => $value) {
@@ -221,13 +231,21 @@ foreach($VALIDATORS as $validator => $value) {
     }
 }
 
+/* run enabled validators (for now only certificate check by PHP function)
+ */
+list($returncode, $message) = certificateCheck($metadata);
+$validations["certificate-check"] = array(
+    "returncode" => $returncode,
+    "message" => $message,
+);
+
 /* validation result
  */
 $returncode_max = -1;
 foreach($validations as $validation) {
     $returncode = max($returncode_max, $validation['returncode']);
 }
-writeXML($returncode, $validations);
+writeXML($returncode, $validations, $debug);
 
 /* delete temporary XML file with metadata
  */
