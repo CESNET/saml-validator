@@ -27,8 +27,8 @@
 
 /* variable definitions
  */
-$KEY_SIZE               = 1024; # bits
-$CERTIFICATE_VALIDITY   = 180;  # days
+$KEY_SIZE               = 2048; # bits
+$CERTIFICATE_VALIDITY   = 14;   # days
 $XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
 
 /* validators
@@ -211,7 +211,7 @@ if(!empty($debug)) {
  */
 $URLsplit = explode("/", $filename);
 $encoded_entityid = $URLsplit[count($URLsplit)-2];
-$metadata = "tmp/" . $encoded_entityid . ".xml";
+$metadata = "tmp/" . $encoded_entityid . uniqid() . ".xml";
 
 file_put_contents("$metadata", file_get_contents("$filename"));
 
