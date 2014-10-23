@@ -30,10 +30,12 @@ You might prefer to disable directory listing by adding the following lines to y
 </Directory>
 ```
 
-
+## Requirements
+[xsd-validator][] is required. Install it into `xsd-validator` directory or edit `$XSD\_VALIDATOR` variable in `validator.php` file.
 
 
 [eduID.cz]: http://www.eduid.cz/
 [JAGGER]: http://jagger.heanet.ie/
 [devnull-saml-validators]: https://devnull.cesnet.cz/saml-validators/
+[xsd-validator]: https://github.com/amouat/xsd-validator/
 
