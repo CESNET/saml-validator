@@ -31,7 +31,7 @@ You might prefer to disable directory listing by adding the following lines to y
 ```
 
 ## Requirements
-[xsd-validator][] is required. Install it into `xsd-validator` directory or edit `$XSD\_VALIDATOR` variable in `validator.php` file.
+[xsd-validator][] is required. Install it into `xsd-validator` directory or edit `$XSD_VALIDATOR` variable in `validator.php` file.
 
 
 [eduID.cz]: http://www.eduid.cz/
