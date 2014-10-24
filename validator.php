@@ -142,7 +142,6 @@ function certificateCheck($metadata) {
         $cert_validTo = date("Y-m-d", $cert_info[validTo_time_t]);
         $cert_validFor = floor((strtotime($cert_validTo)-time())/(60*60*24));
         $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
-        $pub_key[bits] = 1024;
 
         if(($pub_key[bits] >= $GLOBALS['KEY_SIZE']) && ($cert_validFor >= $GLOBALS['CERTIFICATE_VALIDITY'])) {
             $returncode = 0;
