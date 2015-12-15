@@ -1,5 +1,8 @@
 <?php
 
+error_reporting( E_ALL );
+ini_set('display_errors', 1);
+
 /*
  * Download and validate metadata from JAGGER [1].
  *
@@ -34,9 +37,9 @@ $XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
 /* validators
  */
 $VALIDATORS = array(
-    "tech-c" => array(
+    "contact-technical" => array(
         "enabled" => 1,
-        "xmlschema" => "tech-c.xsd",
+        "xmlschema" => "contact-technical.xsd",
         "info" => array(
             0 => "Technical contact is present.",
             2 => "Technical contact is missing! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
@@ -50,9 +53,9 @@ $VALIDATORS = array(
             2 => "UIInfo undefined! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
         ),
     ),
-    "endpoints-entityID" => array(
+    "endpoints-entityid" => array(
         "enabled" => 1,
-        "xmlschema" => "endpoints-entityID.xsd",
+        "xmlschema" => "endpoints-entityid.xsd",
         "info" => array(
             0 => "Endpoints and entityID are all HTTPS.",
             2 => "Endpoints and entityID are required to be HTTPS! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
@@ -86,7 +89,7 @@ $VALIDATORS = array(
 
 /* writeXML function to produce XML output
  */
-function writeXML($returncode, $validations, $debug = 0) {
+function writeXML($returncode, $validations, $debug = 1) {
     $w = new XMLWriter();
     $w->openURI('php://output');
     $w->startDocument('1.0', 'utf-8');
@@ -183,12 +186,22 @@ $info = array(
     ),
 );
 
+/* debug: show <info> elements even for success validations
+ *  value 0 (default) means no debug
+ *  value 1 means debug, other values produces $debug=1
+ */
+if(empty($_GET["debug"])) {
+    $debug = 0;
+} else {
+    $debug = 1;
+}
+
 /* metadata URL check
  */
 $filename = $_GET["filename"];
 
 if(!$filename) {
-    writeXML($error['no_URL']['code'], $error['no_URL']['info']);
+    writeXML($error['no_URL']['code'], $error['no_URL']['info'], $debug);
     exit;
 
 } else {
@@ -196,14 +209,6 @@ if(!$filename) {
         writeXML($error['invalid_URL']['code'], $error['invalid_URL']['info']);
         exit;
     }
-}
-
-/* debug: show <info> elements even for success validations
- */
-$debug = $_GET["debug"];
-
-if(!empty($debug)) {
-    $debug = 1;
 }
 
 /* fetch metadata
