@@ -53,7 +53,7 @@ $VALIDATORS = array (
             2               => "UIInfo undefined.",
         ),
     ),
-    "endpoints-entityID"    => array (
+    "endpoints-entityid"    => array (
         "enabled"           => 1,
         "schema"            => "endpoints-entityid.xsd",
         "info"              => array (
@@ -154,6 +154,27 @@ function validateMetadata ($metadata, $xmlschema) {
             $message = "";
         } else {
             $returncode = 2;
+
+            switch ($xmlschema) {
+                case "contact-technical.xsd":
+                    $message = "No technical contact.";
+                    break;
+                case "uiinfo.xsd":
+                    $message = "No UIInfo.";
+                    break;
+                case "endpoints-entityid.xsd":
+                    $message = "Endpoints/entityID must start with https://.";
+                    break;
+                case "organization.xsd":
+                    $message = "No organization.";
+                    break;
+                case "republish-target.xsd":
+                    $message = "Wrong republish-target.";
+                    break;
+                case "certificate.xsd":
+                    $message = "Missing certificate.";
+                    break;
+            }
         }
 
         return array ($returncode, $message);
