@@ -160,7 +160,7 @@ function validateMetadata ($metadata, $xmlschema) {
                     $message = "No technical contact.";
                     break;
                 case "uiinfo.xsd":
-                    $message = "No UIInfo.";
+                    $message = "No UIInfo or logo not using https://.";
                     break;
                 case "endpoints-entityid.xsd":
                     $message = "Endpoints/entityID must start with https://.";

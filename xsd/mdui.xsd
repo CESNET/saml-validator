@@ -12,6 +12,7 @@
             Document location: http://www.eduid.cz/saml/xsd/
             Document history:
                 V1.0 (May XX, 2014): Initial revision
+                V1.1 (Jan 24, 2016): Logo must use HTTPS.
         </xs:documentation>
     </xs:annotation>
 
@@ -28,7 +29,7 @@
                 <xs:element name="InformationURL"/>
                 <xs:element name="PrivacyStatementURL"/>
                 <xs:element name="Keywords"/>
-                <xs:element name="Logo"/>
+                <xs:element name="Logo" type="mdui:LogoType"/>
 
                 <!--
                 <xs:element name="DisplayName" minOccurs="0" maxOccurs="unbounded"/>
