@@ -22,7 +22,7 @@
     <!-- ScopeType -->
     <xs:simpleType name="ScopeType">
         <xs:restriction base="xs:string">
-            <xs:pattern value="([a-z\.])+"/>
+            <xs:pattern value="([a-z\.\-])+"/>
         </xs:restriction>
     </xs:simpleType>
     <!-- ScopeType -->
