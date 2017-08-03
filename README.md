@@ -28,6 +28,13 @@ On Debian 9 (Stretch) you need a web server and a PHP processor with XML support
 $ apt install apache2 php php-xml
 ```
 
+A temporary directory owned by the user running web server for downloading metadata to validate is required:
+
+```bash
+$ mkdir /var/www/saml-validator/tmp
+$ chown www-data:www-data /var/www/saml-validator/tmp
+```
+
 You might prefer to disable directory listing by adding the following lines to your Apache configuration.
 
 ```apache
@@ -38,6 +45,17 @@ You might prefer to disable directory listing by adding the following lines to y
 
 ## Requirements
 [xsd-validator][] is required. Install it into `xsd-validator/` subdirectory of the downloaded repository or edit `$XSD_VALIDATOR` variable in `validator.php` file accordingly.
+
+```bash
+$ cd /var/www/saml-validator/
+$ git clone https://github.com/amouat/xsd-validator.git
+```
+
+To run [xsd-validator][], Java is required:
+
+```bash
+$ apt install openjdk-8-jre-headless
+```
 
 
 [eduID.cz]: http://www.eduid.cz/
