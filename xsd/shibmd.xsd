@@ -9,7 +9,7 @@
 
     <xs:annotation>
         <xs:documentation>
-            Document identifier: shibmd-1.0.xsd
+            Document identifier: shibmd.xsd
             Document location: http://www.eduid.cz/saml/xsd/
             Revision history:
                 V1.0 (May 21, 2014): Initial revision
