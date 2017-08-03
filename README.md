@@ -1,8 +1,8 @@
-# SAML-Validators
-XML Schemas to validate SAML metadata in [eduID.cz][] federation
+# SAML-Validator
+XML Schemas to validate SAML metadata in [eduID.cz][] federation.
 
-## Available validators
-For now, there are following validators available:
+## Available validator
+For now, there are the following validations available:
 
   * tech-c
   * uiinfo
@@ -12,20 +12,20 @@ For now, there are following validators available:
   * certificate
   * certificate-check
 
-A few other validators are currently being rewritten and tweaked in order to be incorporated into SAML-Validators very soon.
+A few other validators are currently being rewritten and tweaked in order to be incorporated into SAML-Validator very soon.
 
 ## Installation
-If you would like to test SAML-Validators, say, in your [JAGGER][] instance or elsewhere, you can run it from my site ([devnull-saml-validators][]). However, this site might not be up 24/7 and the code might be broken as this machine is intended for developing, you have been warned. Thus, you should clone the SAML-Validators repository to your machine.
+If you would like to test SAML-Validator, say, in your [JAGGER][] instance or elsewhere, you can run it from my site ([devnull-saml-validator][]). However, this site might not be up 24/7 and the code might be broken as this machine is intended for developing, you have been warned. Thus, you should clone the SAML-Validator repository to your machine.
 
 ```bash
-$ mkdir /var/www/saml-validators/
-$ git clone https://github.com/JanOppolzer/saml-validators.git /var/www/saml-validators/
+$ mkdir /var/www/saml-validator/
+$ git clone https://github.com/JanOppolzer/saml-validator.git /var/www/saml-validator/
 ```
 
-You might prefer to disable directory listing by adding the following lines to your Apache configuration. (Do not forget to alter the path to your SAML-Validators.)
+You might prefer to disable directory listing by adding the following lines to your Apache configuration.
 
 ```apache
-<Directory /var/www/saml-validators/>
+<Directory /var/www/saml-validator/>
     Options -Indexes
 </Directory>
 ```
@@ -36,6 +36,6 @@ You might prefer to disable directory listing by adding the following lines to y
 
 [eduID.cz]: http://www.eduid.cz/
 [JAGGER]: http://jagger.heanet.ie/
-[devnull-saml-validators]: https://devnull.cesnet.cz/saml-validators/
+[devnull-saml-validator]: https://devnull.cesnet.cz/saml-validator/
 [xsd-validator]: https://github.com/amouat/xsd-validator/
 
