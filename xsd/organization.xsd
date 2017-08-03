@@ -12,25 +12,24 @@
 
     <xs:annotation>
         <xs:documentation>
-            Document identifier: multiple-org-1.0.xsd
+            Document identifier: organization.xsd
             Document location: http://www.eduid.cz/saml/xsd/
             Revision history:
                 V1.0 (May XX, 2014): Initial revision
+                V1.1 (Aug 03, 2017): ContactPerson and ds:Signature removed
         </xs:documentation>
     </xs:annotation>
 
-    <!-- EntityDescriptor -->
     <xs:element name="EntityDescriptor">
         <xs:complexType>
             <xs:sequence>
 
-                <xs:element ref="ds:Signature" minOccurs="0"/>
                 <xs:element name="Extensions" minOccurs="0"/>
-                <xs:element name="IDPSSODescriptor" minOccurs="0"/>
                 <xs:element name="SPSSODescriptor" minOccurs="0"/>
+                <xs:element name="IDPSSODescriptor" minOccurs="0"/>
                 <xs:element name="AttributeAuthorityDescriptor" minOccurs="0"/>
                 <xs:element name="Organization" minOccurs="1" maxOccurs="1"/>
-                <xs:element name="ContactPerson" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
 
             </xs:sequence>
 
@@ -38,7 +37,6 @@
 
         </xs:complexType>
     </xs:element>
-    <!-- EntityDescriptor -->
 
 </xs:schema>
 
