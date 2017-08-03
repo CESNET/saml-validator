@@ -22,6 +22,12 @@ $ mkdir /var/www/saml-validator/
 $ git clone https://github.com/JanOppolzer/saml-validator.git /var/www/saml-validator/
 ```
 
+On Debian 9 (Stretch) you need a web server and a PHP processor with XML support:
+
+```bash
+$ apt install apache2 php php-xml
+```
+
 You might prefer to disable directory listing by adding the following lines to your Apache configuration.
 
 ```apache
