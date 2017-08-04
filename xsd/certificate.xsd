@@ -2,6 +2,7 @@
 
 <xs:schema
     targetNamespace="urn:oasis:names:tc:SAML:2.0:metadata"
+    xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
     xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified">
@@ -11,115 +12,64 @@
 
     <xs:annotation>
         <xs:documentation>
-            Document identifier: cert-1.0.xsd
+            Document identifier: cert.xsd
             Document location: http://www.eduid.cz/saml/xsd/
             Revision history:
                 V1.0 (May XX, 2014): Initial revision
+                V1.1 (Aug 04, 2017): Rewrite
         </xs:documentation>
     </xs:annotation>
 
-    <!-- EntityDescriptor -->
-    <xs:element name="EntityDescriptor">
-        <xs:complexType>
-            <xs:sequence>
+    <xs:element name="EntityDescriptor" type="md:EntityDescriptorType"/>
+    <xs:complexType name="EntityDescriptorType">
+        <xs:sequence>
+            <xs:element name="Extensions" minOccurs="0"/>
+            <xs:choice>
+                <xs:element ref="md:IDPSSODescriptor"/>
+                <xs:element ref="md:SPSSODescriptor"/>
+            </xs:choice>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+        </xs:sequence>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
 
-                <!-- Signature -->
-                <xs:element ref="ds:Signature" minOccurs="0"/>
-                <!-- Signature -->
+    <xs:element name="IDPSSODescriptor" type="md:IDPSSODescriptorType"/>
+    <xs:complexType name="IDPSSODescriptorType">
+        <xs:sequence>
+            <xs:element name="Extensions" minOccurs="0"/>
+            <xs:element ref="md:KeyDescriptor" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="ArtifactResolutionService" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="NameIDFormat" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="SingleSignOnService" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
 
-                <!-- Extensions -->
-                <xs:element name="Extensions" minOccurs="0"/>
-                <!-- Extensions -->
+    <xs:element name="SPSSODescriptor" type="md:SPSSODescriptorType"/>
+    <xs:complexType name="SPSSODescriptorType">
+        <xs:sequence>
+            <xs:element name="Extensions" minOccurs="0"/>
+            <xs:element ref="md:KeyDescriptor" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="ArtifactResolutionService" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="AssertionConsumerService" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
 
-                <!-- IDPSSODescriptor/SPSSODescriptor -->
-                <xs:choice>
-
-                    <!-- IDPSSODescriptor -->
-                    <xs:element name="IDPSSODescriptor">
-                        <xs:complexType>
-                            <xs:sequence>
-
-                                <!-- Extensions -->
-                                <xs:element name="Extensions" minOccurs="0"/>
-                                <!-- Extensions -->
-
-                                <!-- KeyDescriptor -->
-                                <xs:element name="KeyDescriptor">
-                                    <xs:complexType>
-                                        <xs:sequence>
-
-                                            <!-- KeyInfo -->
-                                            <xs:element ref="ds:KeyInfo" minOccurs="1"/>
-                                            <!-- KeyInfo -->
-
-                                        </xs:sequence>
-
-                                        <xs:anyAttribute processContents="lax"/>
-
-                                    </xs:complexType>
-                                </xs:element>
-                                <!-- KeyDescriptor -->
-
-                                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-
-                            </xs:sequence>
-
-                            <xs:anyAttribute processContents="lax"/>
-
-                        </xs:complexType>
-                    </xs:element>
-                    <!-- IDPSSODescriptor -->
-
-                    <!-- SPSSODescriptor -->
-                    <xs:element name="SPSSODescriptor">
-                        <xs:complexType>
-                            <xs:sequence>
-
-                                <!-- Extensions -->
-                                <xs:element name="Extensions" minOccurs="0"/>
-                                <!-- Extensions -->
-
-                                <!-- KeyDescriptor -->
-                                <xs:element name="KeyDescriptor">
-                                    <xs:complexType>
-                                        <xs:sequence>
-
-                                            <!-- KeyInfo -->
-                                            <xs:element ref="ds:KeyInfo" minOccurs="1"/>
-                                            <!-- KeyInfo -->
-
-                                            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-
-                                        </xs:sequence>
-
-                                        <xs:anyAttribute processContents="lax"/>
-
-                                    </xs:complexType>
-                                </xs:element>
-                                <!-- KeyDescriptor -->
-
-                                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-
-                            </xs:sequence>
-
-                            <xs:anyAttribute processContents="lax"/>
-
-                        </xs:complexType>
-                    </xs:element>
-                    <!-- SPSSODescriptor -->
-
-                </xs:choice>
-                <!-- IDPSSODescriptor/SPSSODescriptor -->
-
-                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-
-            </xs:sequence>
-
-            <xs:anyAttribute processContents="lax"/>
-
-        </xs:complexType>
-    </xs:element>
-    <!-- EntityDescriptor -->
+    <xs:element name="KeyDescriptor" type="md:KeyDescriptorType"/>
+    <xs:complexType name="KeyDescriptorType">
+        <xs:sequence>
+            <xs:element ref="ds:KeyInfo" minOccurs="1"/>
+            <xs:element name="EncryptionMethod" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="use" type="md:KeyType" use="optional"/>
+    </xs:complexType>
+    <xs:simpleType name="KeyType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="encryption"/>
+            <xs:enumeration value="signing"/>
+        </xs:restriction>
+    </xs:simpleType>
 
 </xs:schema>
 
