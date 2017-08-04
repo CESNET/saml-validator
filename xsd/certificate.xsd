@@ -52,6 +52,7 @@
             <xs:element ref="md:KeyDescriptor" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="ArtifactResolutionService" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="AssertionConsumerService" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="AttributeConsumingService" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:anyAttribute processContents="lax"/>
     </xs:complexType>
