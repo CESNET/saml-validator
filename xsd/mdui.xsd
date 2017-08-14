@@ -12,43 +12,24 @@
             Document location: http://www.eduid.cz/saml/xsd/
             Document history:
                 V1.0 (May XX, 2014): Initial revision
-                V1.1 (Jan 24, 2016): Logo must use HTTPS.
+                V1.1 (Jan 24, 2016): Logo must use HTTPS
+                V1.2 (Aug 04, 2017): Cleaning
         </xs:documentation>
     </xs:annotation>
 
-    <!-- UIInfo -->
     <xs:element name="UIInfo">
         <xs:complexType>
-            <!--
-            <xs:sequence>
-            -->
             <xs:choice maxOccurs="unbounded">
-
                 <xs:element name="DisplayName"/>
                 <xs:element name="Description"/>
                 <xs:element name="InformationURL"/>
                 <xs:element name="PrivacyStatementURL"/>
                 <xs:element name="Keywords"/>
                 <xs:element name="Logo" type="mdui:LogoType"/>
-
-                <!--
-                <xs:element name="DisplayName" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element name="Description" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element name="InformationURL" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element name="PrivacyStatementURL" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element name="Keywords" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element name="Logo" minOccurs="0" maxOccurs="unbounded" type="mdui:LogoType"/>
-                -->
-
-            <!--
-            </xs:sequence>
-            -->
             </xs:choice>
         </xs:complexType>
     </xs:element>
-    <!-- UIInfo -->
 
-    <!-- LogoType -->
     <xs:complexType name="LogoType">
         <xs:simpleContent>
             <xs:extension base="mdui:httpsURLType">
@@ -56,15 +37,11 @@
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
-    <!-- LogoType -->
-
-    <!-- httpsURLType -->
     <xs:simpleType name="httpsURLType">
         <xs:restriction base="xs:anyURI">
             <xs:pattern value="https://.+\..+"/>
         </xs:restriction>
     </xs:simpleType>
-    <!-- httpsURLType -->
 
 </xs:schema>
 
