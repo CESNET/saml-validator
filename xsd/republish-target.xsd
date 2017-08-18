@@ -2,7 +2,7 @@
 
 <xs:schema
     targetNamespace="http://eduid.cz/schema/metadata/1.0"
-    xmlns:emd="http://eduid.cz/schema/metadata/1.0"
+    xmlns:eduidmd="http://eduid.cz/schema/metadata/1.0"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified"
     attributeFormDefault="qualified"
@@ -34,7 +34,7 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="RepublishTarget" type="emd:RepublishTargetType"/>
+                <xs:element name="RepublishTarget" type="eduidmd:RepublishTargetType"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
