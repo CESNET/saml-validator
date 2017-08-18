@@ -262,6 +262,46 @@ function scopeRegexpCheck ($metadata) {
     return array ($regexpResult, $regexpMessage[$regexpResult]);
 }
 
+/* validation function: //shibmd:Scope === //EntityDescriptor[@entityID] substring
+ */
+function scopeValueCheck ($metadata) {
+    $sxe = new SimpleXMLElement (file_get_contents($metadata));
+    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $entityID = $sxe->xpath ('/md:EntityDescriptor[@entityID]');
+    $entityID = ((string) $entityID[0]['entityID']);
+    $pattern = '/https:\/\/([a-z0-9.]*)\/.*/i';
+    $replacement = '$1';
+    $hostname = preg_replace ($pattern, $replacement, $entityID);
+
+    $sxe->registerXPathNamespace ('shibmd','urn:mace:shibboleth:metadata:1.0');
+    $result = $sxe->xpath ('//shibmd:Scope[@regexp]');
+    $resultCount = count ($result);
+
+    $scopeValue = array ();
+    for ($i=0; $i<$resultCount; $i++) {
+        $scopeValue[$i] = (string) $result[$i][0];
+    }
+
+    $scopeResult = -1;
+    foreach ($scopeValue as $scope) {
+        if (preg_match ("/$scope/", $hostname)) {
+            $regResult = 0;
+        } else {
+            $regResult = 2;
+        }
+        $scopeResult = max ($scopeResult, $regResult);
+    }
+
+    $scopeMessage = array (
+        -1 => 'Something went wrong with scope value check.',
+         #0 => 'Scope value is a substring of the entityID. That is OK.',
+         0 => '',
+         2 => 'Scope value must be a substring of the entityID!',
+    );
+
+    return array ($scopeResult, $scopeMessage[$scopeResult]);
+}
+
 /* validation function: //md:ContactPerson[@contactType=technical]
  */
 function contactPersonTechnicalCheck ($metadata) {
@@ -388,6 +428,15 @@ if (isIDP ($metadata)) {
         "message"    => $message,
     );
     $validations ["scopeRegexpCheck"] = $result;
+
+// shibmd:Scope === substr(entityID)
+    list ($returncode, $message) = scopeValueCheck ($metadata);
+    $result = array (
+        "returncode" => $returncode,
+        "message"    => $message,
+    );
+    $validations ["scopeValueCheck"] = $result;
+}
 
 // technical contact
 list ($returncode, $message) = contactPersonTechnicalCheck ($metadata);
