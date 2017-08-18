@@ -136,6 +136,17 @@ function writeXMLError ($returncode, $message) {
     $xml->flush ();
 }
 
+/* isIDP function returns true in case $metadata is IdP
+ */
+function isIDP ($metadata) {
+    $sxe = new SimpleXMLElement (file_get_contents ($metadata));
+    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $result = $sxe->xpath ('//md:IDPSSODescriptor');
+
+    if (count ($result) > 0) {
+        return true;
+    }
+}
 
 /* validation function (XML schema)
  */
@@ -215,6 +226,40 @@ function certificateCheck ($metadata) {
     }
 
     return array($returncode, $message);
+}
+
+/* validation function: //shibmd:Scope[@regexp=false]
+ */
+function scopeRegexpCheck ($metadata) {
+    $sxe = new SimpleXMLElement (file_get_contents($metadata));
+    $sxe->registerXPathNamespace ('shibmd','urn:mace:shibboleth:metadata:1.0');
+    $result = $sxe->xpath ('//shibmd:Scope[@regexp]');
+    $resultCount = count ($result);
+
+    $regexpValue = array ();
+    for ($i=0; $i<$resultCount; $i++) {
+        $regexpValue[$i] = (string) $result[$i]['regexp'];
+    }
+
+    $regexpResult = -1;
+    foreach ($regexpValue as $regexp) {
+        if (strcmp ($regexp, 'false') === 0) {
+            $returncode = 0;
+        } else {
+            $returncode = 2;
+        }
+
+        $regexpResult = max ($regexpResult, $returncode);
+    }
+
+    $regexpMessage = array (
+        -1 => 'Something went wrong with scope regexp check.',
+         #0 => 'Scope regexp is false. That is OK.',
+         0 => '',
+         2 => 'Scope regexp must be "false"!',
+    );
+
+    return array ($regexpResult, $regexpMessage[$regexpResult]);
 }
 
 /* validation function: //md:ContactPerson[@contactType=technical]
@@ -333,6 +378,16 @@ $result = array (
     "message"    => $message,
 );
 $validations ["certificateCheck"] = $result;
+
+// shibmd:Scope tests
+if (isIDP ($metadata)) {
+// shibmd:Scope[@regexp=false]
+    list ($returncode, $message) = scopeRegexpCheck ($metadata);
+    $result = array (
+        "returncode" => $returncode,
+        "message"    => $message,
+    );
+    $validations ["scopeRegexpCheck"] = $result;
 
 // technical contact
 list ($returncode, $message) = contactPersonTechnicalCheck ($metadata);
