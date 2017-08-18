@@ -38,6 +38,7 @@
         <xs:sequence>
             <xs:element name="Extensions" minOccurs="0"/>
             <xs:element ref="md:KeyDescriptor" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="SingleLogoutService" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="ArtifactResolutionService" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="NameIDFormat" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="SingleSignOnService" minOccurs="0" maxOccurs="unbounded"/>
