@@ -3,7 +3,7 @@
 <xs:schema
     targetNamespace="urn:oasis:names:tc:SAML:2.0:metadata"
     xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
-    xmlns:emd="http://eduid.cz/schema/metadata/1.0"
+    xmlns:eduidmd="http://eduid.cz/schema/metadata/1.0"
     xmlns:shibmd="urn:mace:shibboleth:metadata:1.0"
     xmlns:mdui="urn:oasis:names:tc:SAML:metadata:ui"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -17,6 +17,9 @@
 
     <xs:import namespace="urn:oasis:names:tc:SAML:metadata:ui"
         schemaLocation="mdui.xsd"/>
+
+    <xs:import namespace="http://eduid.cz/schema/metadata/1.0"
+        schemaLocation="republish-target.xsd"/>
 
     <xs:annotation>
         <xs:documentation>
@@ -51,23 +54,13 @@
                                 <!-- Extensions -->
                                 <xs:element name="Extensions">
                                     <xs:complexType>
-                                        <xs:sequence>
+                                        <xs:all>
 
-                                            <!-- RepublishRequest -->
-                                            <!--
-                                            <xs:element ref="eduidmd:RepublishRequest" minOccurs="0"/>
-                                            -->
-                                            <!-- RepublishRequest -->
+                                            <xs:element ref="eduidmd:RepublishRequest" minOccurs="0" maxOccurs="1"/>
+                                            <xs:element ref="shibmd:Scope" minOccurs="1" maxOccurs="1"/>
+                                            <xs:element ref="mdui:UIInfo" minOccurs="1" maxOccurs="1"/>
 
-                                            <!-- Scope -->
-                                            <xs:element ref="shibmd:Scope" minOccurs="0" maxOccurs="unbounded"/>
-                                            <!-- Scope -->
-
-                                            <!-- UIInfo -->
-                                            <xs:element ref="mdui:UIInfo" minOccurs="0"/>
-                                            <!-- UIInfo -->
-
-                                        </xs:sequence>
+                                        </xs:all>
                                     </xs:complexType>
                                 </xs:element>
                                 <!-- Extensions -->
