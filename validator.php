@@ -38,7 +38,7 @@ $XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
  */
 $VALIDATORS = array (
     "contact-technical"     => array (
-        "enabled"           => 1,
+        "enabled"           => 0,
         "schema"            => "contact-technical.xsd",
         "info"              => array (
             0               => "Technical contact defined.",
@@ -217,6 +217,25 @@ function certificateCheck ($metadata) {
     return array($returncode, $message);
 }
 
+/* validation function: //md:ContactPerson[@contactType=technical]
+ */
+function contactPersonTechnicalCheck ($metadata) {
+    $sxe = new SimpleXMLElement (file_get_contents($metadata));
+    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $result = $sxe->xpath ('/md:EntityDescriptor/md:ContactPerson[@contactType="technical"]');
+
+    if (count ($result) > 0) {
+        $returncode = 0;
+        #$message = "Technical contact defined.";
+        $message = "";
+    } else {
+        $returncode = 2;
+        $message = "Technical contact undefined.";
+    }
+
+    return array ($returncode, $message);
+}
+
 /* error messages definitions
  */
 $error = array (
@@ -314,6 +333,14 @@ $result = array (
     "message"    => $message,
 );
 $validations ["certificateCheck"] = $result;
+
+// technical contact
+list ($returncode, $message) = contactPersonTechnicalCheck ($metadata);
+$result = array (
+    "returncode" => $returncode,
+    "message"    => $message,
+);
+$validations ["contactPersonTechnicalCheck"] = $result;
 
 /* validation result
  */
