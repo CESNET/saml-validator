@@ -78,7 +78,7 @@ $VALIDATORS = array (
         ),
     ),
     "certificate"           => array (
-        "enabled"           => 1,
+        "enabled"           => 0,
         "schema"            => "certificate.xsd",
         "info"              => array (
             0               => "Certificate defined.",
@@ -202,30 +202,38 @@ function certificateCheck ($metadata) {
     $sxe->registerXPathNamespace ('ds','http://www.w3.org/2000/09/xmldsig#');
     $result = $sxe->xpath ('//ds:X509Certificate');
 
-    foreach ($result as $cert) {
-        $X509Certificate = "-----BEGIN CERTIFICATE-----\n" . trim ($cert) . "\n-----END CERTIFICATE-----";
-        $cert_info = openssl_x509_parse ($X509Certificate, true);
-        $cert_validTo = date ("Y-m-d", $cert_info['validTo_time_t']);
-        $cert_validFor = floor ((strtotime ($cert_validTo)-time ())/(60*60*24));
-        $pub_key = openssl_pkey_get_details (openssl_pkey_get_public ($X509Certificate));
+    if (count ($result) > 0) {
 
-        if (($pub_key['bits'] >= $GLOBALS['KEY_SIZE']) && ($cert_validFor >= $GLOBALS['CERTIFICATE_VALIDITY'])) {
-            $returncode = 0;
-            #$message = "Public key size is at least " . $GLOBALS['KEY_SIZE'] . ". That is OK.";
-            $message = "";
-        } elseif (($pub_key['bits'] < $GLOBALS['KEY_SIZE']) && ($cert_validFor >= $GLOBALS['CERTIFICATE_VALIDITY'])) {
-            $returncode = 2;
-            $message = "Public key size has to be greater than or equal to " . $GLOBALS['KEY_SIZE'] . ". Yours is " . $pub_key[bits] . ".";
-        } elseif (($pub_key['bits'] >= $GLOBALS['KEY_SIZE']) && ($cert_validFor < $GLOBALS['CERTIFICATE_VALIDITY'])) {
-            $returncode = 2;
-            $message = "Certificate should be valid at least for " . $GLOBALS['CERTIFICATE_VALIDITY'] . " days. Yours is valid only for " . $cert_validFor . ".";
-        } else {
-            $returncode = 2;
-            $message = "Certificate should be valid at least for " . $GLOBALS['CERTIFICATE_VALIDITY'] . " days. Yours is valid only for " . $cert_validFor . ". And public key size has to be greater than or equal to " . $GLOBALS['KEY_SIZE'] . " bits. Yours is " . $pub_key[bits] . ".";
+        foreach ($result as $cert) {
+            $X509Certificate = "-----BEGIN CERTIFICATE-----\n" . trim ($cert) . "\n-----END CERTIFICATE-----";
+            $cert_info = openssl_x509_parse ($X509Certificate, true);
+            $cert_validTo = date ("Y-m-d", $cert_info['validTo_time_t']);
+            $cert_validFor = floor ((strtotime ($cert_validTo)-time ())/(60*60*24));
+            $pub_key = openssl_pkey_get_details (openssl_pkey_get_public ($X509Certificate));
+
+            if (($pub_key['bits'] >= $GLOBALS['KEY_SIZE']) && ($cert_validFor >= $GLOBALS['CERTIFICATE_VALIDITY'])) {
+                $returncode = 0;
+                #$message = "Public key size is at least " . $GLOBALS['KEY_SIZE'] . ". That is OK.";
+                $message = "";
+            } elseif (($pub_key['bits'] < $GLOBALS['KEY_SIZE']) && ($cert_validFor >= $GLOBALS['CERTIFICATE_VALIDITY'])) {
+                $returncode = 2;
+                $message = "Public key size has to be greater than or equal to " . $GLOBALS['KEY_SIZE'] . ". Yours is " . $pub_key[bits] . ".";
+            } elseif (($pub_key['bits'] >= $GLOBALS['KEY_SIZE']) && ($cert_validFor < $GLOBALS['CERTIFICATE_VALIDITY'])) {
+                $returncode = 2;
+                $message = "Certificate should be valid at least for " . $GLOBALS['CERTIFICATE_VALIDITY'] . " days. Yours is valid only for " . $cert_validFor . ".";
+            } else {
+                $returncode = 2;
+                $message = "Certificate should be valid at least for " . $GLOBALS['CERTIFICATE_VALIDITY'] . " days. Yours is valid only for " . $cert_validFor . ". And public key size has to be greater than or equal to " . $GLOBALS['KEY_SIZE'] . " bits. Yours is " . $pub_key[bits] . ".";
+            }
         }
-    }
 
-    return array($returncode, $message);
+        return array($returncode, $message);
+
+    } else {
+        $returncode = 2;
+        $message    = "No certificate found.";
+        return array ($returncode, $message);
+    }
 }
 
 /* validation function: //shibmd:Scope[@regexp=false]
