@@ -62,7 +62,7 @@ $VALIDATORS = array (
         ),
     ),
     "organization"          => array (
-        "enabled"           => 1,
+        "enabled"           => 0,
         "schema"            => "organization.xsd",
         "info"              => array (
             0               => "Organization defined.",
@@ -310,6 +310,24 @@ function scopeValueCheck ($metadata) {
     return array ($scopeResult, $scopeMessage[$scopeResult]);
 }
 
+/* validation function: //md:Organization
+ */
+function organizationCheck ($metadata) {
+    $sxe = new SimpleXMLElement (file_get_contents($metadata));
+    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $result = $sxe->xpath ('/md:EntityDescriptor/md:Organization');
+
+    if (count ($result) > 0) {
+        $returncode = 0;
+        $message    = "";
+    } else {
+        $returncode = 2;
+        $message    = "Organization undefined.";
+    }
+
+    return array ($returncode, $message);
+}
+
 /* validation function: //md:ContactPerson[@contactType=technical]
  */
 function contactPersonTechnicalCheck ($metadata) {
@@ -445,6 +463,14 @@ if (isIDP ($metadata)) {
     );
     $validations ["scopeValueCheck"] = $result;
 }
+
+// organization
+list ($returncode, $message) = organizationCheck ($metadata);
+$result = array (
+    "returncode" => $returncode,
+    "message"    => $message,
+);
+$validations ["organizationCheck"] = $result;
 
 // technical contact
 list ($returncode, $message) = contactPersonTechnicalCheck ($metadata);
