@@ -1,3 +1,5 @@
+**As XML schema is not flexible enough for various checks we require to pass before metadata is accepted to our federation, this project is being rewritten using PHP/XPath and XSD is being deprecated.**
+
 # SAML-Validator
 XML Schemas to validate SAML metadata in [eduID.cz][] federation.
 
