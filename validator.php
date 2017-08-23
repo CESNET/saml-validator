@@ -53,14 +53,6 @@ $VALIDATORS = array (
             2               => "Republish Target misconfigured.",
         ),
     ),
-    "certificate"           => array (
-        "enabled"           => 0,
-        "schema"            => "certificate.xsd",
-        "info"              => array (
-            0               => "Certificate defined.",
-            2               => "Certificate undefined.",
-        ),
-    ),
 );
 
 /* writeXML function to produce XML output
@@ -148,9 +140,6 @@ function validateMetadata ($metadata, $xmlschema) {
                     break;
                 case "republish-target.xsd":
                     $message = "Wrong republish-target.";
-                    break;
-                case "certificate.xsd":
-                    $message = "Missing certificate.";
                     break;
             }
         }
