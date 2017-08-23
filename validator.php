@@ -37,14 +37,6 @@ $XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
 /* validators
  */
 $VALIDATORS = array (
-    "contact-technical"     => array (
-        "enabled"           => 0,
-        "schema"            => "contact-technical.xsd",
-        "info"              => array (
-            0               => "Technical contact defined.",
-            2               => "Technical contact undefined!",
-        ),
-    ),
     "uiinfo"                => array (
         "enabled"           => 0,
         "schema"            => "uiinfo.xsd",
@@ -167,9 +159,6 @@ function validateMetadata ($metadata, $xmlschema) {
             $returncode = 2;
 
             switch ($xmlschema) {
-                case "contact-technical.xsd":
-                    $message = "No technical contact.";
-                    break;
                 case "uiinfo.xsd":
                     $message = "No UIInfo or logo not using https://.";
                     break;
