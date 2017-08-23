@@ -439,7 +439,7 @@ $debug = !empty ($_GET["debug"]) ? 1 : 0;
 $filename = !empty ($_GET["filename"]) ? $_GET["filename"] : 0;
 
 if (!$filename) {
-    writeXMLError (2, "No metadata URL supplied.");
+    writeXMLError (2, "No metadata URL defined using HTTP GET variable `filename'.");
     exit;
 }
 else {
