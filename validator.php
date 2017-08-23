@@ -241,6 +241,7 @@ function certificateCheck ($metadata) {
 function scopeRegexpCheck ($metadata) {
     $sxe = new SimpleXMLElement (file_get_contents($metadata));
     $sxe->registerXPathNamespace ('shibmd','urn:mace:shibboleth:metadata:1.0');
+    # FIXME: check for <shibmd:Scope> only with IDPs
     $result = $sxe->xpath ('//shibmd:Scope[@regexp]');
     $resultCount = count ($result);
 
