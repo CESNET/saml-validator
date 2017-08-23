@@ -37,14 +37,6 @@ $XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
 /* validators
  */
 $VALIDATORS = array (
-    "uiinfo"                => array (
-        "enabled"           => 0,
-        "schema"            => "uiinfo.xsd",
-        "info"              => array (
-            0               => "UIInfo defined.",
-            2               => "UIInfo undefined.",
-        ),
-    ),
     "endpoints-entityid"    => array (
         "enabled"           => 1,
         "schema"            => "endpoints-entityid.xsd",
@@ -159,9 +151,6 @@ function validateMetadata ($metadata, $xmlschema) {
             $returncode = 2;
 
             switch ($xmlschema) {
-                case "uiinfo.xsd":
-                    $message = "No UIInfo or logo not using https://.";
-                    break;
                 case "endpoints-entityid.xsd":
                     $message = "Endpoints/entityID must start with https://.";
                     break;
