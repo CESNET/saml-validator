@@ -303,6 +303,7 @@ function uiinfoCheck ($metadata) {
     $UIInfoDescriptionEN        = $sxe->xpath ('//mdui:UIInfo/mdui:Description[@xml:lang="en"]');
     $UIInfoInformationURLCS     = $sxe->xpath ('//mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
     $UIInfoInformationURLEN     = $sxe->xpath ('//mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
+    # FIXME: URL to Logo must be HTTPS!
     $UIInfoLogo                 = $sxe->xpath ('//mdui:UIInfo/mdui:Logo');
 
     $messages = array();
