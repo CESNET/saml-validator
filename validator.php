@@ -46,7 +46,7 @@ $VALIDATORS = array (
         ),
     ),
     "uiinfo"                => array (
-        "enabled"           => 1,
+        "enabled"           => 0,
         "schema"            => "uiinfo.xsd",
         "info"              => array (
             0               => "UIInfo defined.",
@@ -310,6 +310,52 @@ function scopeValueCheck ($metadata) {
     return array ($scopeResult, $scopeMessage[$scopeResult]);
 }
 
+/* validation function: //mdui:UIInfo
+ */
+function uiinfoCheck ($metadata) {
+    $sxe = new SimpleXMLElement (file_get_contents($metadata));
+    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $sxe->registerXPathNamespace ('mdui','urn:oasis:names:tc:SAML:metadata:ui');
+
+    $UIInfoDisplayNameCS        = $sxe->xpath ('//mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
+    $UIInfoDisplayNameEN        = $sxe->xpath ('//mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
+    $UIInfoDescriptionCS        = $sxe->xpath ('//mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
+    $UIInfoDescriptionEN        = $sxe->xpath ('//mdui:UIInfo/mdui:Description[@xml:lang="en"]');
+    $UIInfoInformationURLCS     = $sxe->xpath ('//mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
+    $UIInfoInformationURLEN     = $sxe->xpath ('//mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
+    $UIInfoLogo                 = $sxe->xpath ('//mdui:UIInfo/mdui:Logo');
+
+    $messages = array();
+    if (empty ($UIInfoDisplayNameCS))
+        array_push ($messages, "DisplayName/cs missing.");
+    if (empty ($UIInfoDisplayNameEN))
+        array_push ($messages, "DisplayName/en missing.");
+    if (empty ($UIInfoDescriptionCS))
+        array_push ($messages, "Description/cs missing.");
+    if (empty ($UIInfoDescriptionEN))
+        array_push ($messages, "Description/en missing.");
+    if (empty ($UIInfoInformationURLCS))
+        array_push ($messages, "InformationURL/cs missing.");
+    if (empty ($UIInfoInformationURLEN))
+        array_push ($messages, "InformationURL/en missing.");
+    if (isIDP ($metadata)) {
+        if (empty ($UIInfoLogo))
+            array_push ($messages, "Logo missing.");
+    }
+
+    $message = "";
+    if (count ($messages) > 0) {
+        $returncode = 2;
+        for ($i=0; $i<=count ($messages); $i++) {
+            $message .= array_pop ($messages) . " ";
+        }
+    } else {
+        $returncode = 0;
+    }
+
+    return array ($returncode, $message);
+}
+
 /* validation function: //md:Organization
  */
 function organizationCheck ($metadata) {
@@ -463,6 +509,14 @@ if (isIDP ($metadata)) {
     );
     $validations ["scopeValueCheck"] = $result;
 }
+
+// uiinfo
+list ($returncode, $message) = uiinfoCheck ($metadata);
+$result = array (
+    "returncode" => $returncode,
+    "message"    => $message,
+);
+$validations ["uiinfoCheck"] = $result;
 
 // organization
 list ($returncode, $message) = organizationCheck ($metadata);
