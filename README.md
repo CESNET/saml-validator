@@ -4,15 +4,16 @@
 XML Schemas to validate SAML metadata in [eduID.cz][] federation.
 
 ## Available validator
-For now, there are the following validations available:
+The following validations/checks are available:
 
-  * tech-c
-  * uiinfo
+  * `<ds:X509Certificate>` element contains valid certificate with defined public key size
+  * `regexp` attribute of `<shibmd:Scope>` element is set to `false`
+  * `<shibmd:Scope>` element contains substring `/md:EntityDescriptor[@entityID]`
+  * `<mdui:UIInfo>` element (with other elements inside) present
+  * `<md:Organization>` element present
+  * at least one `<md:ContactPerson>` element with `contactType` attribute equal to `technical`
   * endpoints-entityID
-  * organization
   * republish-target
-  * certificate
-  * certificate-check
 
 A few other validators are currently being rewritten and tweaked in order to be incorporated into SAML-Validator very soon.
 
