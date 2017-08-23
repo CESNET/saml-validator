@@ -375,6 +375,7 @@ $error = array (
 
 /* output texts definitions
  */
+# FIXME: is this still used? if not, remove it.
 $info = array(
     "certificate-check" => array(
         0 => "Certificate key size and validity correct.",
