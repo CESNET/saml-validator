@@ -91,6 +91,22 @@ function isIDP ($metadata) {
     }
 }
 
+/* validation function: validates the document agains XSD
+ */
+function validateSAML($metadata) {
+    $xml = new DOMDocument();
+    @$xml->load($metadata);
+    if(!@$xml->schemaValidate('xsd/saml-schema-metadata-2.0.xsd')) {
+        $returncode = 2;
+        $message    = "Invalid metadata.";
+    } else {
+        $returncode = 0;
+        $message    = "";
+    }
+
+    return array($returncode, $message);
+}
+
 /* validation function (certificate's public key size and validity)
  */
 function certificateCheck ($metadata) {
@@ -476,74 +492,84 @@ if (empty ($md_content)) {
  */
 $validations = array ();
 
-/* run enabled validators (PHP scripts)
- */
-// certificate validity
-list ($returncode, $message) = certificateCheck ($metadata);
-$result = array (
+// validate metadata against XSD schema
+list($returncode, $message) = validateSAML($metadata);
+$result = array(
     "returncode" => $returncode,
     "message"    => $message,
 );
-$validations ["certificateCheck"] = $result;
+$validations["validMetadata"] = $result;
 
-// shibmd:Scope tests
-if (isIDP ($metadata)) {
-// shibmd:Scope[@regexp=false]
-    list ($returncode, $message) = scopeRegexpCheck ($metadata);
+if($returncode === 0) {
+    /* run enabled validators (PHP scripts)
+     */
+    // certificate validity
+    list ($returncode, $message) = certificateCheck ($metadata);
     $result = array (
         "returncode" => $returncode,
         "message"    => $message,
     );
-    $validations ["scopeRegexpCheck"] = $result;
+    $validations ["certificateCheck"] = $result;
 
-// shibmd:Scope === substr(entityID)
-    list ($returncode, $message) = scopeValueCheck ($metadata);
+    // shibmd:Scope tests
+    if (isIDP ($metadata)) {
+    // shibmd:Scope[@regexp=false]
+        list ($returncode, $message) = scopeRegexpCheck ($metadata);
+        $result = array (
+            "returncode" => $returncode,
+            "message"    => $message,
+        );
+        $validations ["scopeRegexpCheck"] = $result;
+
+    // shibmd:Scope === substr(entityID)
+        list ($returncode, $message) = scopeValueCheck ($metadata);
+        $result = array (
+            "returncode" => $returncode,
+            "message"    => $message,
+        );
+        $validations ["scopeValueCheck"] = $result;
+    }
+
+    // uiinfo
+    list ($returncode, $message) = uiinfoCheck ($metadata);
     $result = array (
         "returncode" => $returncode,
         "message"    => $message,
     );
-    $validations ["scopeValueCheck"] = $result;
+    $validations ["uiinfoCheck"] = $result;
+
+    // organization
+    list ($returncode, $message) = organizationCheck ($metadata);
+    $result = array (
+        "returncode" => $returncode,
+        "message"    => $message,
+    );
+    $validations ["organizationCheck"] = $result;
+
+    // technical contact
+    list ($returncode, $message) = contactPersonTechnicalCheck ($metadata);
+    $result = array (
+        "returncode" => $returncode,
+        "message"    => $message,
+    );
+    $validations ["contactPersonTechnicalCheck"] = $result;
+
+    // republish request
+    list($returncode, $message) = checkRepublishRequest($metadata);
+    $result = array(
+        "returncode" => $returncode,
+        "message"    => $message,
+    );
+    $validations["checkRepublishRequest"] = $result;
+
+    // HTTPS URLs
+    list($returncode, $message) = checkHTTPS($metadata);
+    $result = array(
+        "returncode" => $returncode,
+        "message"    => $message,
+    );
+    $validations["checkHTTPS"] = $result;
 }
-
-// uiinfo
-list ($returncode, $message) = uiinfoCheck ($metadata);
-$result = array (
-    "returncode" => $returncode,
-    "message"    => $message,
-);
-$validations ["uiinfoCheck"] = $result;
-
-// organization
-list ($returncode, $message) = organizationCheck ($metadata);
-$result = array (
-    "returncode" => $returncode,
-    "message"    => $message,
-);
-$validations ["organizationCheck"] = $result;
-
-// technical contact
-list ($returncode, $message) = contactPersonTechnicalCheck ($metadata);
-$result = array (
-    "returncode" => $returncode,
-    "message"    => $message,
-);
-$validations ["contactPersonTechnicalCheck"] = $result;
-
-// republish request
-list($returncode, $message) = checkRepublishRequest($metadata);
-$result = array(
-    "returncode" => $returncode,
-    "message"    => $message,
-);
-$validations["checkRepublishRequest"] = $result;
-
-// HTTPS URLs
-list($returncode, $message) = checkHTTPS($metadata);
-$result = array(
-    "returncode" => $returncode,
-    "message"    => $message,
-);
-$validations["checkHTTPS"] = $result;
 
 /* validation result
  */
