@@ -376,6 +376,91 @@ function checkRepublishRequest($metadata) {
     return array($returncode, $message);
 }
 
+/* validation function: check for HTTPS in URL addresses
+ */
+function checkHTTPS($metadata) {
+    $sxe = new SimpleXMLElement(file_get_contents($metadata));
+    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $sxe->registerXPathNamespace('mdui','urn:oasis:names:tc:SAML:metadata:ui');
+    $sxe->registerXPathNamespace('init','urn:oasis:names:tc:SAML:profiles:SSO:request-init');
+    $sxe->registerXPathNamespace('idpdisc','urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol');
+
+    $URL = array();
+
+    # /md:EntityDescriptor[@entityID]
+    $entityID = $sxe->xpath('/md:EntityDescriptor[@entityID]');
+    $entityID = ((string) $entityID[0]['entityID']);
+    $URL['entityID'] = $entityID;
+
+    # //mdui:UIInfo/mdui:Logo
+    $Logo = $sxe->xpath('//mdui:UIInfo/mdui:Logo');
+    for($i=0; $i<count($Logo); $i++) {
+        $URL['Logo'.$i] = (string) $Logo[$i][0];
+    }
+
+    # //md:ArtifactResolutionService
+    $ArtifactResolutionService = $sxe->xpath('/md:EntityDescriptor//md:ArtifactResolutionService');
+    for($i=0; $i<count($ArtifactResolutionService); $i++) {
+        $URL['ArtifactResolutionService'.$i] = (string) $ArtifactResolutionService[$i]['Location'];
+    }
+
+    # //md:SingleLogoutService
+    $SingleLogoutService = $sxe->xpath('/md:EntityDescriptor//md:SingleLogoutService');
+    for($i=0; $i<count($SingleLogoutService); $i++) {
+        $URL['SingleLogoutService'.$i] = (string) $SingleLogoutService[$i]['Location'];
+    }
+
+    # //md:SingleSignOnService
+    $SingleSignOnService = $sxe->xpath('/md:EntityDescriptor//md:SingleSignOnService');
+    for($i=0; $i<count($SingleSignOnService); $i++) {
+        $URL['SingleSignOnService'.$i] = (string) $SingleSignOnService[$i]['Location'];
+    }
+
+    # //md:AttributeService
+    $AttributeService = $sxe->xpath('/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService');
+    for($i=0; $i<count($AttributeService); $i++) {
+        $URL['AttributeService'.$i] = (string) $AttributeService[$i]['Location'];
+    }
+
+    # //init:RequestInitiator
+    $RequestInitiator = $sxe->xpath('/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/init:RequestInitiator');
+    for($i=0; $i<count($RequestInitiator); $i++) {
+        $URL['RequestInitiator'.$i] = (string) $RequestInitiator[$i]['Location'];
+    }
+
+    # //idpdisc:DiscoveryResponse
+    $DiscoveryResponse = $sxe->xpath('/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/idpdisc:DiscoveryResponse');
+    for($i=0; $i<count($DiscoveryResponse); $i++) {
+        $URL['DiscoveryResponse'.$i] = (string) $DiscoveryResponse[$i]['Location'];
+    }
+
+    # //md:AssertionConsumerService
+    $AssertionConsumerService = $sxe->xpath('/md:EntityDescriptor/md:SPSSODescriptor/md:AssertionConsumerService');
+    for($i=0; $i<count($AssertionConsumerService); $i++) {
+        $URL['AssertionConsumerService'.$i] = (string) $AssertionConsumerService[$i]['Location'];
+    }
+
+    $messages = array();
+    foreach($URL as $key => $value) {
+        if(preg_match("/http\:\/\//", $value)) {
+            array_push($messages, "HTTP found in $key.");
+            #echo "HTTP found in $key!";
+        }
+    }
+
+    $message = "";
+    if(count($messages) > 0) {
+        $returncode = 2;
+        for($i=0; $i<count($messages); $i++) {
+            $message .= array_pop($messages) . " ";
+        }
+    } else {
+        $returncode = 0;
+    }
+
+    return array($returncode, $message);
+}
+
 /* error messages definitions
  */
 $error = array (
@@ -515,6 +600,14 @@ $result = array(
     "message"    => $message,
 );
 $validations["checkRepublishRequest"] = $result;
+
+// HTTPS URLs
+list($returncode, $message) = checkHTTPS($metadata);
+$result = array(
+    "returncode" => $returncode,
+    "message"    => $message,
+);
+$validations["checkHTTPS"] = $result;
 
 /* validation result
  */
