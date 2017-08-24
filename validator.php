@@ -11,22 +11,17 @@ ini_set ('display_errors', 1);
  * Metadata URL has to be passed via HTTP GET variable called `filename'
  * defined in Federation Validators settings (JAGGER). Then, metadata is saved
  * as a XML file `ENCODED_ENTITYID'.xml (ENCODED_ENTITYID is generated
- * automatically by JAGGER) in `tmp/' subdirectory which must exists and be
+ * automatically by JAGGER) in `tmp/' subdirectory which must exist and be
  * writable by the user running web server. After validation process is
  * finished, the temporary XML file with metadata is deleted.
  *
- * As a XML validator, XSD-Validator [2] by Adrian Mouat [3,4] is deployed.
- *
- * SAML-Validators (XML schemas, PHP, etc.) is written by Jan Oppolzer [5] from
- * CESNET [6] and can be obtained from GitHub repository [7].
+ * SAML-validators is written by Jan Oppolzer [2] from CESNET [3] and can be
+ * obtained from GitHub repository [4].
  *
  * [1] http://jagger.heanet.ie/
- * [2] https://github.com/amouat/xsd-validator/
- * [3] https://github.com/amouat/
- * [4] http://www.adrianmouat.com/
- * [5] jan.oppolzer@cesnet.cz
- * [6] https://www.cesnet.cz/
- * [7] https://github.com/JanOppolzer/saml-validators/
+ * [2] jan.oppolzer@cesnet.cz
+ * [3] https://www.cesnet.cz/
+ * [4] https://github.com/JanOppolzer/saml-validator/
  *
  */
 
