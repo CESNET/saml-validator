@@ -397,16 +397,6 @@ $error = array (
     ),
 );
 
-/* output texts definitions
- */
-# FIXME: is this still used? if not, remove it.
-$info = array(
-    "certificate-check" => array(
-        0 => "Certificate key size and validity correct.",
-        2 => "Certificate key size or validity incorrect! For more info, see https://www.eduid.cz/cs/tech/metadata-profile",
-    ),
-);
-
 /* debug: show <info> elements even for success validations
  *  value 0 (default) means no debug
  *  value 1 means debug
