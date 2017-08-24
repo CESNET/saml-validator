@@ -34,21 +34,7 @@ ini_set ('display_errors', 1);
  */
 $KEY_SIZE               = 2048; # bits
 $CERTIFICATE_VALIDITY   = 30;   # days
-$XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
 $REPUBLISH_TARGET       = "http://edugain.org/";
-
-/* validators
- */
-$VALIDATORS = array (
-    "endpoints-entityid"    => array (
-        "enabled"           => 1,
-        "schema"            => "endpoints-entityid.xsd",
-        "info"              => array (
-            0               => "Endpoints and entityID use HTTPS.",
-            2               => "Endpoints and entityID must use HTTPS.",
-        ),
-    ),
-);
 
 /* writeXML function to produce XML output
  *
@@ -64,12 +50,6 @@ function writeXML ($returncode, $validations, $debug) {
     $xml->startElement('validation');
 
         $xml->writeElement('returncode', $returncode);
-
-        foreach ($validations as $result => $validator) {
-            if ($debug === 1 && !empty ($GLOBALS["VALIDATORS"][$result]["info"][$validator["returncode"]])) {
-                $xml->writeElement ('info', $GLOBALS["VALIDATORS"][$result]["info"][$validator["returncode"]]);
-            }
-        }
 
         foreach ($validations as $validation) {
             if (!empty ($validation["message"]))
@@ -108,38 +88,6 @@ function isIDP ($metadata) {
 
     if (count ($result) > 0) {
         return true;
-    }
-}
-
-/* validation function (XML schema)
- */
-function validateMetadata ($metadata, $xmlschema) {
-    if (file_exists ($GLOBALS["XSD_VALIDATOR"])) {
-        $command = "$GLOBALS[XSD_VALIDATOR] xsd/$xmlschema $metadata";
-        exec ($command, $output);
-
-        $message = null;
-        foreach ($output as $line) {
-            $message .= $line;
-        }
-
-        if (preg_match ("/validates/", $message)) {
-            $returncode = 0;
-            $message = "";
-        } else {
-            $returncode = 2;
-
-            switch ($xmlschema) {
-                case "endpoints-entityid.xsd":
-                    $message = "Endpoints/entityID must start with https://.";
-                    break;
-            }
-        }
-
-        return array ($returncode, $message);
-    } else {
-        writeXML ("2", "XSD Validator missing", 1);
-        exit;
     }
 }
 
@@ -524,21 +472,9 @@ if (empty ($md_content)) {
     file_put_contents ("$metadata", $md_content);
 }
 
-/* run enabled validators (XML schema)
+/* an array for storing validation results
  */
 $validations = array ();
-foreach ($VALIDATORS as $validator => $value) {
-    if ($VALIDATORS[$validator]["enabled"] == 1) {
-        list ($returncode, $message) = validateMetadata ($metadata, $VALIDATORS[$validator]["schema"]);
-
-        $result = array (
-            "returncode"    => $returncode,
-            "message"       => $message,
-        );
-
-        $validations[$validator] = $result;
-    }
-}
 
 /* run enabled validators (PHP scripts)
  */
