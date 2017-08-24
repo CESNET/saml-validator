@@ -1,7 +1,5 @@
-**As XML schema is not flexible enough for various checks we require to pass before metadata is accepted to our federation, this project is being rewritten using PHP/XPath and XSD is being deprecated.**
-
-# SAML-Validator
-XML Schemas to validate SAML metadata in [eduID.cz][] federation.
+# SAML-validator
+SAML-validator is a tool to validate SAML metadata for [eduID.cz][] federation.
 
 ## Available validator
 The following validations/checks are available:
@@ -15,10 +13,8 @@ The following validations/checks are available:
   * endpoints-entityID
   * republish-target
 
-A few other validators are currently being rewritten and tweaked in order to be incorporated into SAML-Validator very soon.
-
 ## Installation
-If you would like to test SAML-Validator, say, in your [JAGGER][] instance or elsewhere, you can run it from my site ([devnull-saml-validator][]). However, this site might not be up 24/7 and the code might be broken as this machine is intended for developing, you have been warned. Thus, you should clone the SAML-Validator repository to your machine.
+If you would like to test SAML-validator, say, in your [JAGGER][] instance or elsewhere, you can run it from my site ([snotra-saml-validator][]). However, this machine might not be up 24/7 and the code might be broken as this machine is intended for developing. You have been warned. Thus, you should clone the SAML-validator repository to your machine.
 
 ```bash
 $ mkdir /var/www/saml-validator/
@@ -38,7 +34,7 @@ $ mkdir /var/www/saml-validator/tmp
 $ chown www-data:www-data /var/www/saml-validator/tmp
 ```
 
-You might prefer to disable directory listing by adding the following lines to your Apache configuration.
+You might prefer to disable directory listing by adding the following lines to your Apache configuration. Anyway, an `index.html` file is available, so if this one is loaded by default (most probably), you do not need to disable directory listing.
 
 ```apache
 <Directory /var/www/saml-validator/>
@@ -46,23 +42,7 @@ You might prefer to disable directory listing by adding the following lines to y
 </Directory>
 ```
 
-## Requirements
-[xsd-validator][] is required. Install it into `xsd-validator/` subdirectory of the downloaded repository or edit `$XSD_VALIDATOR` variable in `validator.php` file accordingly.
-
-```bash
-$ cd /var/www/saml-validator/
-$ git clone https://github.com/amouat/xsd-validator.git
-```
-
-To run [xsd-validator][], Java is required:
-
-```bash
-$ apt install openjdk-8-jre-headless
-```
-
-
 [eduID.cz]: http://www.eduid.cz/
 [JAGGER]: http://jagger.heanet.ie/
-[devnull-saml-validator]: https://devnull.cesnet.cz/saml-validator/
-[xsd-validator]: https://github.com/amouat/xsd-validator/
+[snotra-saml-validator]: https://snotra.cesnet.cz/~jop/saml-validator/
 
