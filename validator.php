@@ -48,14 +48,6 @@ $VALIDATORS = array (
             2               => "Endpoints and entityID must use HTTPS.",
         ),
     ),
-    "republish-target"      => array (
-        "enabled"           => 1,
-        "schema"            => "republish-target.xsd",
-        "info"              => array (
-            0               => "Republish Target configured correctly or not at all.",
-            2               => "Republish Target misconfigured.",
-        ),
-    ),
 );
 
 /* writeXML function to produce XML output
@@ -140,9 +132,6 @@ function validateMetadata ($metadata, $xmlschema) {
             switch ($xmlschema) {
                 case "endpoints-entityid.xsd":
                     $message = "Endpoints/entityID must start with https://.";
-                    break;
-                case "republish-target.xsd":
-                    $message = "Wrong republish-target.";
                     break;
             }
         }
