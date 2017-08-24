@@ -35,6 +35,7 @@ ini_set ('display_errors', 1);
 $KEY_SIZE               = 2048; # bits
 $CERTIFICATE_VALIDITY   = 30;   # days
 $XSD_VALIDATOR          = "./xsd-validator/xsdv.sh";
+$REPUBLISH_TARGET       = "http://edugain.org/";
 
 /* validators
  */
@@ -354,6 +355,38 @@ function contactPersonTechnicalCheck ($metadata) {
     return array ($returncode, $message);
 }
 
+/* validation function: checkRepublishRequest
+ */
+function checkRepublishRequest($metadata) {
+    $sxe = new SimpleXMLElement(file_get_contents($metadata));
+    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $sxe->registerXPathNamespace('eduidmd','http://eduid.cz/schema/metadata/1.0');
+    $republishRequest = $sxe->xpath('/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest');
+    $republishTarget  = $sxe->xpath('/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest/eduidmd:RepublishTarget');
+
+    if(count($republishRequest) > 0) {
+        if(count($republishTarget) > 0) {
+            if(strcmp($GLOBALS['REPUBLISH_TARGET'], (string) $republishTarget[0][0]) === 0) {
+                $returncode = 0;
+                #$message    = "RepublishRequest OK.";
+                $message    = "";
+            } else {
+                $returncode = 2;
+                $message    = "RepublishTarget misconfigured.";
+            }
+        } else {
+            $returncode = 2;
+            $message    = "RepublishTarget missing.";
+        }
+    } else {
+        $returncode = 0;
+        #$message    = "No RepublishRequest found. That's OK.";
+        $message    = "";
+    }
+
+    return array($returncode, $message);
+}
+
 /* error messages definitions
  */
 $error = array (
@@ -495,6 +528,14 @@ $result = array (
     "message"    => $message,
 );
 $validations ["contactPersonTechnicalCheck"] = $result;
+
+// republish request
+list($returncode, $message) = checkRepublishRequest($metadata);
+$result = array(
+    "returncode" => $returncode,
+    "message"    => $message,
+);
+$validations["checkRepublishRequest"] = $result;
 
 /* validation result
  */
