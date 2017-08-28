@@ -143,6 +143,38 @@ function certificateCheck ($metadata) {
     }
 }
 
+/* validation function: /md:EntityDescriptor/{md:IDPSSODescriptor,md:AttributeAuthorityDescriptor}/md:Extensions/shibmd:Scope
+ */
+function scopeCheck($metadata) {
+    $sxe = new SimpleXMLElement(file_get_contents($metadata));
+    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $sxe->registerXPathNamespace('shibmd','urn:mace:shibboleth:metadata:1.0');
+    $resultIDP = $sxe->xpath('/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/shibmd:Scope');
+    $resultAA  = $sxe->xpath('/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:Extensions/shibmd:Scope');
+
+    $messages = array();
+    if(count($resultIDP) !== 1) {
+        #echo "IDP/Scope misconfiguration.";
+        array_push($messages, "IDPSSODescriptor/Scope misconfiguration.");
+    }
+    if(count($resultAA) !== 1) {
+        #echo "AA/Scope misconfiguration.";
+        array_push($messages, "AttributeAuthorityDescriptor/Scope misconfiguration.");
+    }
+
+    $message = "";
+    if(count($messages) > 0) {
+        $returncode = 2;
+        for($i=0; $i<=count($messages); $i++) {
+            $message .= array_pop($messages) . " ";
+        }
+    } else {
+        $returncode = 0;
+    }
+
+    return array($returncode, $message);
+}
+
 /* validation function: //shibmd:Scope[@regexp=false]
  */
 function scopeRegexpCheck ($metadata) {
@@ -508,7 +540,15 @@ if($returncode === 0) {
 
     // shibmd:Scope tests
     if (isIDP ($metadata)) {
-    // shibmd:Scope[@regexp=false]
+        // shibmd:Scope
+        list($returncode, $message) = scopeCheck($metadata);
+        $result = array(
+            "returncode" => $returncode,
+            "message"    => $message,
+        );
+        $validations["scopeCheck"] = $result;
+
+        // shibmd:Scope[@regexp=false]
         list ($returncode, $message) = scopeRegexpCheck ($metadata);
         $result = array (
             "returncode" => $returncode,
@@ -516,7 +556,7 @@ if($returncode === 0) {
         );
         $validations ["scopeRegexpCheck"] = $result;
 
-    // shibmd:Scope === substr(entityID)
+        // shibmd:Scope === substr(entityID)
         list ($returncode, $message) = scopeValueCheck ($metadata);
         $result = array (
             "returncode" => $returncode,
