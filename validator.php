@@ -467,10 +467,6 @@ $error = array (
         "code"      => 2,
         "info"      => "An URL supplied in HTTP GET variable `filename' contains no metadata.",
     ),
-    "XSDV_missing"  => array (
-        "code"      => 2,
-        "info"      => "XSD Validator missing.",
-    ),
 );
 
 /* debug: show <info> elements even for success validations
