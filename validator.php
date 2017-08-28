@@ -431,7 +431,6 @@ function checkHTTPS($metadata) {
     foreach($URL as $key => $value) {
         if(preg_match("/http\:\/\//", $value)) {
             array_push($messages, "HTTP found in $key.");
-            #echo "HTTP found in $key!";
         }
     }
 
