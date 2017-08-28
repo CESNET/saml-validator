@@ -157,7 +157,7 @@ function scopeCheck($metadata) {
         #echo "IDP/Scope misconfiguration.";
         array_push($messages, "IDPSSODescriptor/Scope misconfiguration.");
     }
-    if(count($resultAA) !== 1) {
+    if(count($resultAA) > 1) {
         #echo "AA/Scope misconfiguration.";
         array_push($messages, "AttributeAuthorityDescriptor/Scope misconfiguration.");
     }
