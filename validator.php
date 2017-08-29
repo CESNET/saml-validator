@@ -94,6 +94,9 @@ function validateSAML($metadata) {
     if(!@$xml->schemaValidate('xsd/saml-schema-metadata-2.0.xsd')) {
         $returncode = 2;
         $message    = "Invalid metadata.";
+    } elseif(!@$xml->schemaValidate('xsd/sstc-saml-metadata-ui-v1.0.xsd')) {
+        $returncode = 2;
+        $message    = "Invalid metadata (UIInfo).";
     } else {
         $returncode = 0;
         $message    = "";
