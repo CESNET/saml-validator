@@ -468,10 +468,6 @@ $error = array (
         "code"      => 2,
         "info"      => "No metadata URL supplied in HTTP GET variable `filename'.",
     ),
-    "URL_invalid"   => array (
-        "code"      => 2,
-        "info"      => "Invalid metadata URL supplied in HTTP GET variable `filename'.",
-    ),
     "URL_empty"     => array (
         "code"      => 2,
         "info"      => "An URL supplied in HTTP GET variable `filename' contains no metadata.",
@@ -497,7 +493,7 @@ if (!$filename) {
 }
 else {
     if (!filter_var($filename, FILTER_VALIDATE_URL)) {
-        writeXML ($error['URL_invalid']['code'], $error['URL_invalid']['info'], $debug);
+        writeXMLError(2, "Invalid metadata URL supplied in HTTP GET variable `filename'.");
         exit;
     }
 }
