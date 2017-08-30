@@ -461,19 +461,6 @@ function checkHTTPS($metadata) {
     return array($returncode, $message);
 }
 
-/* error messages definitions
- */
-$error = array (
-    "URL_none"      => array (
-        "code"      => 2,
-        "info"      => "No metadata URL supplied in HTTP GET variable `filename'.",
-    ),
-    "URL_empty"     => array (
-        "code"      => 2,
-        "info"      => "An URL supplied in HTTP GET variable `filename' contains no metadata.",
-    ),
-);
-
 /* debug: show <info> elements even for success validations
  *  value 0 (default) means no debug
  *  value 1 means debug
