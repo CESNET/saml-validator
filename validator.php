@@ -86,17 +86,28 @@ function isIDP ($metadata) {
     }
 }
 
+/* returns a string containing XML errors produced by libxml
+ */
+function libxml_display_errors() {
+    $errors = libxml_get_errors();
+    $return = null;
+    foreach($errors as $error) {
+        $return .= trim($error->message) . " ";
+    }
+    return $return;
+    libxml_clear_errors();
+}
+
 /* validation function: validates the document agains XSD
  */
 function validateSAML($metadata) {
+    libxml_use_internal_errors(true);
     $xml = new DOMDocument();
     @$xml->load($metadata);
-    if(!@$xml->schemaValidate('xsd/saml-schema-metadata-2.0.xsd')) {
+    if(!@$xml->schemaValidate('xsd/saml-schema-metadata-2.0.xsd') or
+       !@$xml->schemaValidate('xsd/sstc-saml-metadata-ui-v1.0.xsd')) {
         $returncode = 2;
-        $message    = "Invalid metadata.";
-    } elseif(!@$xml->schemaValidate('xsd/sstc-saml-metadata-ui-v1.0.xsd')) {
-        $returncode = 2;
-        $message    = "Invalid metadata (UIInfo).";
+        $message    = libxml_display_errors();
     } else {
         $returncode = 0;
         $message    = "";
