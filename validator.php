@@ -327,21 +327,40 @@ function organizationCheck ($metadata) {
 
 /* validation function: //md:ContactPerson[@contactType=technical]
  */
-function contactPersonTechnicalCheck ($metadata) {
-    $sxe = new SimpleXMLElement (file_get_contents($metadata));
-    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $result = $sxe->xpath ('/md:EntityDescriptor/md:ContactPerson[@contactType="technical"]');
+function contactPersonTechnicalCheck($metadata) {
+    $sxe = new SimpleXMLElement(file_get_contents($metadata));
+    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $contactPerson = $sxe->xpath('/md:EntityDescriptor/md:ContactPerson[@contactType="technical"]');
 
-    if (count ($result) > 0) {
-        $returncode = 0;
-        #$message = "Technical contact defined.";
-        $message = "";
+    $messages = array();
+    if(count($contactPerson) < 1) {
+        array_push($messages, "ContactPerson undefined.");
     } else {
-        $returncode = 2;
-        $message = "Technical contact undefined.";
+        foreach($contactPerson as $c) {
+            if(empty($c->GivenName)) {
+                array_push($messages, "GivenName missing in " . $c->getName() . ".");
+            }
+            if(empty($c->SurName)) {
+                array_push($messages, "SurName missing in " . $c->getName() . ".");
+            }
+            if(empty($c->EmailAddress)) {
+                array_push($messages, "EmailAddress missing in " . $c->getName() . ".");
+            }
+        }
     }
 
-    return array ($returncode, $message);
+    $returncode = null;
+    $message    = null;
+    if(count($messages) > 0) {
+        $returncode = 2;
+        foreach($messages as $m) {
+            $message .= $m . " ";
+        }
+    } else {
+        $returncode = 0;
+    }
+
+    return array($returncode, $message);
 }
 
 /* validation function: checkRepublishRequest
