@@ -309,20 +309,48 @@ function uiinfoCheck ($metadata) {
 
 /* validation function: //md:Organization
  */
-function organizationCheck ($metadata) {
-    $sxe = new SimpleXMLElement (file_get_contents($metadata));
-    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $result = $sxe->xpath ('/md:EntityDescriptor/md:Organization');
+function organizationCheck($metadata) {
+    $sxe = new SimpleXMLElement(file_get_contents($metadata));
+    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
+    $organization = $sxe->xpath('/md:EntityDescriptor/md:Organization');
 
-    if (count ($result) > 0) {
-        $returncode = 0;
-        $message    = "";
+    $messages = array();
+    if(count($organization) == 0) {
+        array_push($messages, "Organization missing.");
     } else {
-        $returncode = 2;
-        $message    = "Organization undefined.";
+        $OrganizationNameCS        = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="cs"]');
+        $OrganizationNameEN        = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="en"]');
+        $OrganizationDisplayNameCS = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="cs"]');
+        $OrganizationDisplayNameEN = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="en"]');
+        $OrganizationURLCS         = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="cs"]');
+        $OrganizationURLEN         = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="en"]');
+
+        if(empty($OrganizationNameCS))
+            array_push($messages, "OrganizationName/cs missing.");
+        if(empty($OrganizationNameEN))
+            array_push($messages, "OrganizationName/en missing.");
+        if(empty($OrganizationDisplayNameCS))
+            array_push($messages, "OrganizationDisplayName/cs missing.");
+        if(empty($OrganizationDisplayNameEN))
+            array_push($messages, "OrganizationDisplayName/en missing.");
+        if(empty($OrganizationURLCS))
+            array_push($messages, "OrganizationURL/cs missing.");
+        if(empty($OrganizationURLEN))
+            array_push($messages, "OrganizationURL/en missing.");
     }
 
-    return array ($returncode, $message);
+    $returncode = null;
+    $message    = null;
+    if(count($messages) > 0) {
+        $returncode = 2;
+        foreach($messages as $m) {
+            $message .= $m . " ";
+        }
+    } else {
+        $returncode = 0;
+    }
+
+    return array($returncode, $message);
 }
 
 /* validation function: //md:ContactPerson[@contactType=technical]
