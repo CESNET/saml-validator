@@ -228,8 +228,7 @@ function scopeValueCheck ($metadata) {
     $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
     $entityID = $sxe->xpath ('/md:EntityDescriptor[@entityID]');
     $entityID = ((string) $entityID[0]['entityID']);
-    # FIXME: `_` & `-` within DNS names?
-    $pattern = '/https:\/\/([a-z0-9.]*)\/.*/i';
+    $pattern = '/https:\/\/([a-z0-9_\-\.]*)\/.*/i';
     $replacement = '$1';
     $hostname = preg_replace ($pattern, $replacement, $entityID);
 
