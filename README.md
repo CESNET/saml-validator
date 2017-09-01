@@ -1,4 +1,7 @@
 # SAML-validator
+
+**For more information, look at the [SAML-validator Wiki][] page.**
+
 SAML-validator is a tool to validate SAML metadata for [eduID.cz][] federation.
 
 ## Available validator
@@ -44,6 +47,7 @@ You might prefer to disable directory listing by adding the following lines to y
 </Directory>
 ```
 
+[SAML-validator Wiki]: https://github.com/JanOppolzer/saml-validator/wiki
 [eduID.cz]: http://www.eduid.cz/
 [JAGGER]: http://jagger.heanet.ie/
 [snotra-saml-validator]: https://snotra.cesnet.cz/~jop/saml-validator/
