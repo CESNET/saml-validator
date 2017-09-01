@@ -297,8 +297,8 @@ function uiinfoCheck ($metadata) {
     $message = "";
     if (count ($messages) > 0) {
         $returncode = 2;
-        for ($i=0; $i<=count ($messages); $i++) {
-            $message .= array_pop ($messages) . " ";
+        foreach($messages as $m) {
+            $message .= $m . " ";
         }
     } else {
         $returncode = 0;
