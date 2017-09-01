@@ -168,10 +168,10 @@ function scopeCheck($metadata) {
 
     $messages = array();
     if(count($resultIDP) !== 1) {
-        array_push($messages, "IDPSSODescriptor/Scope misconfiguration.");
+        array_push($messages, "Precisely 1 IDPSSODescriptor/Scope required.");
     }
     if(count($resultAA) > 1) {
-        array_push($messages, "AttributeAuthorityDescriptor/Scope misconfiguration.");
+        array_push($messages, "Either 0 or 1 AttributeAuthorityDescriptor/Scope allowed.");
     }
 
     $message = "";
