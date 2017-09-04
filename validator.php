@@ -47,6 +47,24 @@ function writeXML($returncode, $message = null) {
     $xml->flush();
 }
 
+/* filterResult() returns $returncode and $message variables
+ */
+function filterResult($validations) {
+    $returncode = -1;
+    $message    = null;
+
+    foreach($validations as $validation) {
+        $returncode = max($returncode, $validation["returncode"]);
+    }
+
+    foreach($validations as $validation) {
+        if(!empty($validation["message"]))
+            $message .= $validation["message"];
+    }
+
+    return array($returncode, $message);
+}
+
 /* isIDP function returns true in case $metadata is IdP
  */
 function isIDP ($metadata) {
@@ -610,20 +628,10 @@ if($returncode === 0) {
     $validations["checkHTTPS"] = $result;
 }
 
-/* validation result
+/* get result and produce XML
  */
-$returncode_final = -1;
-foreach ($validations as $validation) {
-    $returncode_final = max ($returncode_final, $validation["returncode"]);
-}
-
-$message = null;
-foreach($validations as $validation) {
-    if(!empty($validation["message"]))
-        $message .= $validation["message"];
-}
-
-writeXML($returncode_final, $message);
+list($returncode, $message) = filterResult($validations);
+writeXML($returncode, $message);
 
 /* delete temporary XML file with metadata
  */
