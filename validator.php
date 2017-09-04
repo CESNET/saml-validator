@@ -31,28 +31,21 @@ $KEY_SIZE               = 2048; # bits
 $CERTIFICATE_VALIDITY   = 30;   # days
 $REPUBLISH_TARGET       = "http://edugain.org/";
 
-/* writeXML function to produce XML output
- *
- * FIXME: rewrite to just a dumb function writeXML (return code, info message)
- *
+/* writeXML() function to produce XML output
  */
-function writeXML ($returncode, $validations) {
+function writeXML($returncode, $validations) {
     $xml = new XMLWriter();
-    $xml->openURI('php://output');
-    $xml->startDocument('1.0', 'utf-8');
+    $xml->openURI("php://output");
+    $xml->startDocument("1.0", "utf-8");
     $xml->setIndent(true);
-
-    $xml->startElement('validation');
-
-        $xml->writeElement('returncode', $returncode);
-
-        foreach ($validations as $validation) {
-            if (!empty ($validation["message"]))
-                $xml->writeElement ('message', $validation["message"]);
-        }
-
+    $xml->setIndentString("    ");
+    $xml->startElement("validation");
+    $xml->writeElement("returncode", $returncode);
+    foreach($validations as $validation) {
+        if(!empty($validation["message"]))
+            $xml->writeElement ("message", $validation["message"]);
+    }
     $xml->endElement();
-
     $xml->endDocument();
     $xml->flush();
 }
