@@ -47,25 +47,6 @@ function writeXML($returncode, $message = null) {
     $xml->flush();
 }
 
-/* writeXMLError() function to produce various error messages as a XML document
- *
- * FIXME: rewrite writeXML(int, array[]) to writeXML(int, string), then drop
- *        writeXMLError()
- */
-function writeXMLError($returncode, $message) {
-    $xml = new XMLWriter();
-    $xml->openURI("php://output");
-    $xml->startDocument("1.0", "utf-8");
-    $xml->setIndent("true");
-    $xml->setIndentString("    ");
-    $xml->startElement("validation");
-    $xml->writeElement("returncode", $returncode);
-    $xml->writeElement("message", $message);
-    $xml->endElement();
-    $xml->endDocument();
-    $xml->flush();
-}
-
 /* isIDP function returns true in case $metadata is IdP
  */
 function isIDP ($metadata) {
