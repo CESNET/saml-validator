@@ -54,12 +54,12 @@ function filterResult($validations) {
     $message    = null;
 
     foreach($validations as $validation) {
-        $returncode = max($returncode, $validation["returncode"]);
+        $returncode = max($returncode, $validation[0]);
     }
 
     foreach($validations as $validation) {
-        if(!empty($validation["message"]))
-            $message .= $validation["message"];
+        if(!empty($validation[1]))
+            $message .= $validation[1];
     }
 
     return array($returncode, $message);
@@ -542,90 +542,40 @@ if (empty ($md_content)) {
 $validations = array ();
 
 // validate metadata against XSD schema
-list($returncode, $message) = validateSAML($metadata);
-$result = array(
-    "returncode" => $returncode,
-    "message"    => $message,
-);
-$validations["validMetadata"] = $result;
+$validations["validMetadata"] = validateSAML($metadata);
 
-if($returncode === 0) {
+if($validations["validMetadata"][0] === 0) {
     /* run enabled validators (PHP scripts)
      */
     // certificate validity
-    list ($returncode, $message) = certificateCheck ($metadata);
-    $result = array (
-        "returncode" => $returncode,
-        "message"    => $message,
-    );
-    $validations ["certificateCheck"] = $result;
+    $validations["certificateCheck"] = certificateCheck($metadata);
 
     // shibmd:Scope tests
     if (isIDP ($metadata)) {
         // shibmd:Scope
-        list($returncode, $message) = scopeCheck($metadata);
-        $result = array(
-            "returncode" => $returncode,
-            "message"    => $message,
-        );
-        $validations["scopeCheck"] = $result;
+        $validations["scopeCheck"] = scopeCheck($metadata);
 
         // shibmd:Scope[@regexp=false]
-        list ($returncode, $message) = scopeRegexpCheck ($metadata);
-        $result = array (
-            "returncode" => $returncode,
-            "message"    => $message,
-        );
-        $validations ["scopeRegexpCheck"] = $result;
+        $validations["scopeRegexpCheck"] = scopeRegexpCheck($metadata);
 
         // shibmd:Scope === substr(entityID)
-        list ($returncode, $message) = scopeValueCheck ($metadata);
-        $result = array (
-            "returncode" => $returncode,
-            "message"    => $message,
-        );
-        $validations ["scopeValueCheck"] = $result;
+        $validations["scopeValueCheck"] = scopeValueCheck($metadata);
     }
 
     // uiinfo
-    list ($returncode, $message) = uiinfoCheck ($metadata);
-    $result = array (
-        "returncode" => $returncode,
-        "message"    => $message,
-    );
-    $validations ["uiinfoCheck"] = $result;
+    $validations["uiinfoCheck"] = uiinfoCheck($metadata);
 
     // organization
-    list ($returncode, $message) = organizationCheck ($metadata);
-    $result = array (
-        "returncode" => $returncode,
-        "message"    => $message,
-    );
-    $validations ["organizationCheck"] = $result;
+    $validations["organizationCheck"] = organizationCheck($metadata);
 
     // technical contact
-    list ($returncode, $message) = contactPersonTechnicalCheck ($metadata);
-    $result = array (
-        "returncode" => $returncode,
-        "message"    => $message,
-    );
-    $validations ["contactPersonTechnicalCheck"] = $result;
+    $validations["contactPersonTechnicalCheck"] = contactPersonTechnicalCheck($metadata);
 
     // republish request
-    list($returncode, $message) = checkRepublishRequest($metadata);
-    $result = array(
-        "returncode" => $returncode,
-        "message"    => $message,
-    );
-    $validations["checkRepublishRequest"] = $result;
+    $validations["checkRepublishRequest"] = checkRepublishRequest($metadata);
 
     // HTTPS URLs
-    list($returncode, $message) = checkHTTPS($metadata);
-    $result = array(
-        "returncode" => $returncode,
-        "message"    => $message,
-    );
-    $validations["checkHTTPS"] = $result;
+    $validations["checkHTTPS"] = checkHTTPS($metadata);
 }
 
 /* get result and produce XML
