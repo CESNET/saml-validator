@@ -33,7 +33,7 @@ $REPUBLISH_TARGET       = "http://edugain.org/";
 
 /* writeXML() function to produce XML output
  */
-function writeXML($returncode, $validations) {
+function writeXML($returncode, $message = null) {
     $xml = new XMLWriter();
     $xml->openURI("php://output");
     $xml->startDocument("1.0", "utf-8");
@@ -41,10 +41,7 @@ function writeXML($returncode, $validations) {
     $xml->setIndentString("    ");
     $xml->startElement("validation");
     $xml->writeElement("returncode", $returncode);
-    foreach($validations as $validation) {
-        if(!empty($validation["message"]))
-            $xml->writeElement ("message", $validation["message"]);
-    }
+    $xml->writeElement("message", $message);
     $xml->endElement();
     $xml->endDocument();
     $xml->flush();
@@ -639,7 +636,13 @@ foreach ($validations as $validation) {
     $returncode_final = max ($returncode_final, $validation["returncode"]);
 }
 
-writeXML ($returncode_final, $validations);
+$message = null;
+foreach($validations as $validation) {
+    if(!empty($validation["message"]))
+        $message .= $validation["message"];
+}
+
+writeXML($returncode_final, $message);
 
 /* delete temporary XML file with metadata
  */
