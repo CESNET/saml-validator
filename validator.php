@@ -356,23 +356,29 @@ function organizationCheck($metadata) {
 /* validation function: //md:ContactPerson[@contactType=technical]
  */
 function contactPersonTechnicalCheck($metadata) {
-    $sxe = new SimpleXMLElement(file_get_contents($metadata));
-    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $contactPerson = $sxe->xpath('/md:EntityDescriptor/md:ContactPerson[@contactType="technical"]');
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+    $contactPersons = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@contactType='technical']");
 
     $messages = array();
-    if(count($contactPerson) < 1) {
-        array_push($messages, "ContactPerson undefined.");
+    if($contactPersons->length < 1) {
+        array_push($messages, "ContactPerson/technical undefined.");
     } else {
-        foreach($contactPerson as $c) {
-            if(empty($c->GivenName)) {
-                array_push($messages, "GivenName missing in " . $c->getName() . ".");
+        foreach($contactPersons as $c) {
+            $givenName = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata","GivenName");
+            $sn        = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata","SurName");
+            $mail      = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata","EmailAddress");
+
+            if(empty($givenName->item(0)->nodeValue)) {
+                array_push($messages, "GivenName missing in ContactPerson.");
             }
-            if(empty($c->SurName)) {
-                array_push($messages, "SurName missing in " . $c->getName() . ".");
+            if(empty($sn->item(0)->nodeValue)) {
+                array_push($messages, "SurName missing in ContactPerson.");
             }
-            if(empty($c->EmailAddress)) {
-                array_push($messages, "EmailAddress missing in " . $c->getName() . ".");
+            if(empty($mail->item(0)->nodeValue)) {
+                array_push($messages, "EmailAddress missing in ContactPerson.");
             }
         }
     }
