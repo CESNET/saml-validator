@@ -510,12 +510,12 @@ function checkHTTPS($metadata) {
 $filename = !empty ($_GET["filename"]) ? $_GET["filename"] : 0;
 
 if (!$filename) {
-    writeXMLError (2, "No metadata URL defined using HTTP GET variable `filename'.");
+    writeXML(2, "No metadata URL defined using HTTP GET variable `filename'.");
     exit;
 }
 else {
     if (!filter_var($filename, FILTER_VALIDATE_URL)) {
-        writeXMLError(2, "Invalid metadata URL supplied in HTTP GET variable `filename'.");
+        writeXML(2, "Invalid metadata URL supplied in HTTP GET variable `filename'.");
         exit;
     }
 }
@@ -529,10 +529,10 @@ $metadata = "tmp/" . $encoded_entityid . uniqid('-') . ".xml";
 !$md_content = @file_get_contents ("$filename");
 
 if (empty ($md_content)) {
-    writeXMLError (2, "Metadata file has no content.");
+    writeXML(2, "Metadata file has no content.");
     exit;
 } elseif (!$md_content) {
-    writeXMLError (2, "No metadata URL");
+    writeXML(2, "No metadata URL");
     exit;
 } else {
     file_put_contents ("$metadata", $md_content);
