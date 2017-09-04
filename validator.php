@@ -33,10 +33,10 @@ $REPUBLISH_TARGET       = "http://edugain.org/";
 
 /* writeXML function to produce XML output
  *
- * FIXME: rewrite to just a dumb function writeXML (return code, info message, debug message)
+ * FIXME: rewrite to just a dumb function writeXML (return code, info message)
  *
  */
-function writeXML ($returncode, $validations, $debug) {
+function writeXML ($returncode, $validations) {
     $xml = new XMLWriter();
     $xml->openURI('php://output');
     $xml->startDocument('1.0', 'utf-8');
@@ -513,15 +513,6 @@ function checkHTTPS($metadata) {
     return array($returncode, $message);
 }
 
-/* debug: show <info> elements even for success validations
- *  value 0 (default) means no debug
- *  value 1 means debug
- *  other values produces $debug=1
- *
- *  FIXME: clear input fileds
- */
-$debug = !empty ($_GET["debug"]) ? 1 : 0;
-
 /* filename: metadata URL
  */
 $filename = !empty ($_GET["filename"]) ? $_GET["filename"] : 0;
@@ -653,7 +644,7 @@ foreach ($validations as $validation) {
     $returncode_final = max ($returncode_final, $validation["returncode"]);
 }
 
-writeXML ($returncode_final, $validations, $debug);
+writeXML ($returncode_final, $validations);
 
 /* delete temporary XML file with metadata
  */
