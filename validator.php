@@ -541,40 +541,20 @@ if (empty ($md_content)) {
  */
 $validations = array ();
 
-// validate metadata against XSD schema
+/* validate metadata and save results
+ */
 $validations["validMetadata"] = validateSAML($metadata);
-
 if($validations["validMetadata"][0] === 0) {
-    /* run enabled validators (PHP scripts)
-     */
-    // certificate validity
-    $validations["certificateCheck"] = certificateCheck($metadata);
-
-    // shibmd:Scope tests
-    if (isIDP ($metadata)) {
-        // shibmd:Scope
+    if(isIDP($metadata)) {
         $validations["scopeCheck"] = scopeCheck($metadata);
-
-        // shibmd:Scope[@regexp=false]
         $validations["scopeRegexpCheck"] = scopeRegexpCheck($metadata);
-
-        // shibmd:Scope === substr(entityID)
         $validations["scopeValueCheck"] = scopeValueCheck($metadata);
     }
-
-    // uiinfo
+    $validations["certificateCheck"] = certificateCheck($metadata);
     $validations["uiinfoCheck"] = uiinfoCheck($metadata);
-
-    // organization
     $validations["organizationCheck"] = organizationCheck($metadata);
-
-    // technical contact
     $validations["contactPersonTechnicalCheck"] = contactPersonTechnicalCheck($metadata);
-
-    // republish request
     $validations["checkRepublishRequest"] = checkRepublishRequest($metadata);
-
-    // HTTPS URLs
     $validations["checkHTTPS"] = checkHTTPS($metadata);
 }
 
