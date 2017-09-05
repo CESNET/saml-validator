@@ -55,11 +55,7 @@ function filterResult($validations) {
 
     foreach($validations as $validation) {
         $returncode = max($returncode, $validation[0]);
-    }
-
-    foreach($validations as $validation) {
-        if(!empty($validation[1]))
-            $message .= $validation[1];
+        $message .= $validation[1];
     }
 
     return array($returncode, $message);
