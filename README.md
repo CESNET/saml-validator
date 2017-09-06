@@ -10,6 +10,12 @@ $ mkdir /var/www/saml-validator/
 $ git clone https://github.com/JanOppolzer/saml-validator.git /var/www/saml-validator/
 ```
 
+For SAML-validator to work, you need a temporary directory called `tmp/` writtable by web-server user (`www-data` in Debian):
+```bash
+$ mkdir /var/www/saml-validator/tmp/
+$ chown www-data:www-data /var/www/saml-validator/tmp/
+```
+
 On Debian 9 (Stretch) you need a web server and a PHP processor with XML support:
 
 ```bash
