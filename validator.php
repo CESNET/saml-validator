@@ -266,20 +266,20 @@ function uiinfoCheck ($metadata) {
 
     $messages = array();
     if (empty ($UIInfoDisplayNameCS))
-        array_push ($messages, "DisplayName/cs missing.");
+        array_push ($messages, "UIInfo->DisplayName/cs missing.");
     if (empty ($UIInfoDisplayNameEN))
-        array_push ($messages, "DisplayName/en missing.");
+        array_push ($messages, "UIInfo->DisplayName/en missing.");
     if (empty ($UIInfoDescriptionCS))
-        array_push ($messages, "Description/cs missing.");
+        array_push ($messages, "UIInfo->Description/cs missing.");
     if (empty ($UIInfoDescriptionEN))
-        array_push ($messages, "Description/en missing.");
+        array_push ($messages, "UIInfo->Description/en missing.");
     if (empty ($UIInfoInformationURLCS))
-        array_push ($messages, "InformationURL/cs missing.");
+        array_push ($messages, "UIInfo->InformationURL/cs missing.");
     if (empty ($UIInfoInformationURLEN))
-        array_push ($messages, "InformationURL/en missing.");
+        array_push ($messages, "UIInfo->InformationURL/en missing.");
     if (isIDP ($metadata)) {
         if (empty ($UIInfoLogo))
-            array_push ($messages, "Logo missing.");
+            array_push ($messages, "UIInfo->Logo missing.");
     }
 
     $message = "";
@@ -314,17 +314,17 @@ function organizationCheck($metadata) {
         $OrganizationURLEN         = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="en"]');
 
         if(empty($OrganizationNameCS))
-            array_push($messages, "OrganizationName/cs missing.");
+            array_push($messages, "Organization->OrganizationName/cs missing.");
         if(empty($OrganizationNameEN))
-            array_push($messages, "OrganizationName/en missing.");
+            array_push($messages, "Organization->OrganizationName/en missing.");
         if(empty($OrganizationDisplayNameCS))
-            array_push($messages, "OrganizationDisplayName/cs missing.");
+            array_push($messages, "Organization->OrganizationDisplayName/cs missing.");
         if(empty($OrganizationDisplayNameEN))
-            array_push($messages, "OrganizationDisplayName/en missing.");
+            array_push($messages, "Organization->OrganizationDisplayName/en missing.");
         if(empty($OrganizationURLCS))
-            array_push($messages, "OrganizationURL/cs missing.");
+            array_push($messages, "Organization->OrganizationURL/cs missing.");
         if(empty($OrganizationURLEN))
-            array_push($messages, "OrganizationURL/en missing.");
+            array_push($messages, "Organization->OrganizationURL/en missing.");
     }
 
     $returncode = null;
@@ -360,13 +360,13 @@ function contactPersonTechnicalCheck($metadata) {
             $mail      = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata","EmailAddress");
 
             if(empty($givenName->item(0)->nodeValue)) {
-                array_push($messages, "GivenName missing in ContactPerson.");
+                array_push($messages, "ContactPerson/technical->GivenName missing.");
             }
             if(empty($sn->item(0)->nodeValue)) {
-                array_push($messages, "SurName missing in ContactPerson.");
+                array_push($messages, "ContactPerson/technical->SurName missing.");
             }
             if(empty($mail->item(0)->nodeValue)) {
-                array_push($messages, "EmailAddress missing in ContactPerson.");
+                array_push($messages, "ContactPerson/technical->EmailAddress missing.");
             }
         }
     }
@@ -403,11 +403,11 @@ function checkRepublishRequest($metadata) {
                 $message    = "";
             } else {
                 $returncode = 2;
-                $message    = "RepublishTarget misconfigured.";
+                $message    = "RepublishRequest->RepublishTarget misconfigured.";
             }
         } else {
             $returncode = 2;
-            $message    = "RepublishTarget missing.";
+            $message    = "RepublishRequest->RepublishTarget missing.";
         }
     } else {
         $returncode = 0;
