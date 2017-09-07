@@ -10,7 +10,7 @@ $ mkdir /var/www/saml-validator/
 $ git clone https://github.com/JanOppolzer/saml-validator.git /var/www/saml-validator/
 ```
 
-For SAML-validator to work, you need a temporary directory called `tmp/` writtable by web-server user (`www-data` in Debian):
+For SAML-validator to work, you need a temporary directory defined by a $TMP\_DIRECTORY variable (default value is `tmp/`) writtable by the web-server user (`www-data` in Debian). It is used for storing metadata to validate:
 ```bash
 $ mkdir /var/www/saml-validator/tmp/
 $ chown www-data:www-data /var/www/saml-validator/tmp/
@@ -20,13 +20,6 @@ On Debian 9 (Stretch) you need a web server and a PHP processor with XML support
 
 ```bash
 $ apt install apache2 php php-xml
-```
-
-A temporary directory owned by the user running web server for downloading metadata to validate is required:
-
-```bash
-$ mkdir /var/www/saml-validator/tmp
-$ chown www-data:www-data /var/www/saml-validator/tmp
 ```
 
 You might prefer to disable directory listing by adding the following lines to your Apache configuration. Anyway, an `index.html` file is available, so if this one is loaded by default (most probably), you do not need to disable directory listing.
