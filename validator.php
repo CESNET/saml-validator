@@ -30,6 +30,7 @@ ini_set ('display_errors', 1);
 $KEY_SIZE               = 2048; # bits
 $CERTIFICATE_VALIDITY   = 30;   # days
 $REPUBLISH_TARGET       = "http://edugain.org/";
+$TMP_DIRECTORY          = "tmp/";
 
 /* writeXML() function to produce XML output
  */
@@ -517,9 +518,13 @@ else {
 
 /* fetch metadata
  */
+if(!file_exists($TMP_DIRECTORY) || !is_dir($TMP_DIRECTORY)) {
+    writeXML(2, "Create a `saml-validator/$TMP_DIRECTORY` directory writtable by a web-server user.");
+    exit;
+}
 $URLsplit = explode ("/", $filename);
 $encoded_entityid = $URLsplit[count($URLsplit)-2];
-$metadata = "tmp/" . $encoded_entityid . uniqid('-') . ".xml";
+$metadata = $TMP_DIRECTORY . $encoded_entityid . uniqid('-') . ".xml";
 
 !$md_content = @file_get_contents ("$filename");
 
