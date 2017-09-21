@@ -255,48 +255,50 @@ function scopeValueCheck ($metadata) {
 
 /* validation function: //mdui:UIInfo
  */
-function uiinfoCheck ($metadata) {
-    $sxe = new SimpleXMLElement (file_get_contents($metadata));
-    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $sxe->registerXPathNamespace ('mdui','urn:oasis:names:tc:SAML:metadata:ui');
+function uiinfoCheck($metadata) {
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+    $xpath->registerNameSpace("mdui", "urn:oasis:names:tc:SAML:metadata:ui");
 
-    $UIInfoDisplayNameCS        = $sxe->xpath ('//mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
-    $UIInfoDisplayNameEN        = $sxe->xpath ('//mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
-    $UIInfoDescriptionCS        = $sxe->xpath ('//mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
-    $UIInfoDescriptionEN        = $sxe->xpath ('//mdui:UIInfo/mdui:Description[@xml:lang="en"]');
-    $UIInfoInformationURLCS     = $sxe->xpath ('//mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
-    $UIInfoInformationURLEN     = $sxe->xpath ('//mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
-    $UIInfoLogo                 = $sxe->xpath ('//mdui:UIInfo/mdui:Logo');
+    $UIInfoDisplayNameCS        = $xpath->query('//mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
+    $UIInfoDisplayNameEN        = $xpath->query('//mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
+    $UIInfoDescriptionCS        = $xpath->query('//mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
+    $UIInfoDescriptionEN        = $xpath->query('//mdui:UIInfo/mdui:Description[@xml:lang="en"]');
+    $UIInfoInformationURLCS     = $xpath->query('//mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
+    $UIInfoInformationURLEN     = $xpath->query('//mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
+    $UIInfoLogo                 = $xpath->query('//mdui:UIInfo/mdui:Logo');
 
     $messages = array();
-    if (empty ($UIInfoDisplayNameCS))
-        array_push ($messages, "UIInfo->DisplayName/cs missing.");
-    if (empty ($UIInfoDisplayNameEN))
-        array_push ($messages, "UIInfo->DisplayName/en missing.");
-    if (empty ($UIInfoDescriptionCS))
-        array_push ($messages, "UIInfo->Description/cs missing.");
-    if (empty ($UIInfoDescriptionEN))
-        array_push ($messages, "UIInfo->Description/en missing.");
-    if (empty ($UIInfoInformationURLCS))
-        array_push ($messages, "UIInfo->InformationURL/cs missing.");
-    if (empty ($UIInfoInformationURLEN))
-        array_push ($messages, "UIInfo->InformationURL/en missing.");
-    if (isIDP ($metadata)) {
-        if (empty ($UIInfoLogo))
-            array_push ($messages, "UIInfo->Logo missing.");
+    if($UIInfoDisplayNameCS->length !== 1)
+       array_push($messages, "UIInfo->DisplayName/cs missing.");
+    if($UIInfoDisplayNameEN->length !== 1)
+       array_push($messages, "UIInfo->DisplayName/en missing.");
+    if($UIInfoDescriptionCS->length !== 1)
+       array_push($messages, "UIInfo->Description/cs missing.");
+    if($UIInfoDescriptionEN->length !== 1)
+       array_push($messages, "UIInfo->Description/en missing.");
+    if($UIInfoInformationURLCS->length !== 1)
+       array_push($messages, "UIInfo->InformationURL/cs missing.");
+    if($UIInfoInformationURLEN->length !== 1)
+       array_push($messages, "UIInfo->InformationURL/en missing.");
+    if(isIDP($metadata)) {
+       if($UIInfoLogo->length < 1)
+           array_push($messages, "UIInfo->Logo missing.");
     }
 
     $message = "";
-    if (count ($messages) > 0) {
-        $returncode = 2;
-        foreach($messages as $m) {
-            $message .= $m . " ";
-        }
+    if(count($messages) > 0) {
+       $returncode = 2;
+       foreach($messages as $m) {
+           $message .= $m . " ";
+       }
     } else {
         $returncode = 0;
     }
 
-    return array ($returncode, $message);
+    return array($returncode, $message);
 }
 
 /* validation function: //md:Organization
