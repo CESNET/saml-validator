@@ -150,17 +150,19 @@ function certificateCheck ($metadata) {
 /* validation function: /md:EntityDescriptor/{md:IDPSSODescriptor,md:AttributeAuthorityDescriptor}/md:Extensions/shibmd:Scope
  */
 function scopeCheck($metadata) {
-    $sxe = new SimpleXMLElement(file_get_contents($metadata));
-    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $sxe->registerXPathNamespace('shibmd','urn:mace:shibboleth:metadata:1.0');
-    $resultIDP = $sxe->xpath('/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/shibmd:Scope');
-    $resultAA  = $sxe->xpath('/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:Extensions/shibmd:Scope');
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+    $xpath->registerNameSpace("shibmd", "urn:mace:shibboleth:metadata:1.0");
+    $resultIDP = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/shibmd:Scope");
+    $resultAA  = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:Extensions/shibmd:Scope");
 
     $messages = array();
-    if(count($resultIDP) !== 1) {
+    if($resultIDP->length !== 1) {
         array_push($messages, "Precisely 1 IDPSSODescriptor/Scope required.");
     }
-    if(count($resultAA) > 1) {
+    if($resultAA->length > 1) {
         array_push($messages, "Either 0 or 1 AttributeAuthorityDescriptor/Scope allowed.");
     }
 
