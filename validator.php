@@ -65,11 +65,13 @@ function filterResult($validations) {
 /* isIDP function returns true in case $metadata is IdP
  */
 function isIDP ($metadata) {
-    $sxe = new SimpleXMLElement (file_get_contents ($metadata));
-    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $result = $sxe->xpath ('//md:IDPSSODescriptor');
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+    $result = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor");
 
-    if (count ($result) > 0) {
+    if ($result->length > 0) {
         return true;
     }
 }
