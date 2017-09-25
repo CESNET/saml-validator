@@ -203,12 +203,11 @@ function scopeRegexpCheck($metadata) {
             $returncode = 2;
         }
 
-        $regexpResult = max ($regexpResult, $returncode);
+        $regexpResult = max($regexpResult, $returncode);
     }
 
     $regexpMessage = array(
         -1 => 'Something went wrong with scope regexp check.',
-         #0 => 'Scope regexp is false. That is OK.',
          0 => '',
          2 => 'Scope regexp must be "false"!',
     );
