@@ -432,65 +432,66 @@ function checkRepublishRequest($metadata) {
 /* validation function: check for HTTPS in URL addresses
  */
 function checkHTTPS($metadata) {
-    $sxe = new SimpleXMLElement(file_get_contents($metadata));
-    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $sxe->registerXPathNamespace('mdui','urn:oasis:names:tc:SAML:metadata:ui');
-    $sxe->registerXPathNamespace('init','urn:oasis:names:tc:SAML:profiles:SSO:request-init');
-    $sxe->registerXPathNamespace('idpdisc','urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol');
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+    $xpath->registerNameSpace("mdui", "urn:oasis:names:tc:SAML:metadata:ui");
+    $xpath->registerNameSpace("init", "urn:oasis:names:tc:SAML:profiles:SSO:request-init");
+    $xpath->registerNameSpace("idpdisc", "urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol");
 
     $URL = array();
 
     # /md:EntityDescriptor[@entityID]
-    $entityID = $sxe->xpath('/md:EntityDescriptor[@entityID]');
-    $entityID = ((string) $entityID[0]['entityID']);
-    $URL['entityID'] = $entityID;
+    $entityID = $xpath->query("/md:EntityDescriptor");
+    $URL["entityID"] = $entityID->item(0)->getAttribute("entityID");
 
     # //mdui:UIInfo/mdui:Logo
-    $Logo = $sxe->xpath('//mdui:UIInfo/mdui:Logo');
-    for($i=0; $i<count($Logo); $i++) {
-        $URL['Logo'.$i] = (string) $Logo[$i][0];
+    $Logo = $xpath->query("//mdui:UIInfo/mdui:Logo");
+    for($i=0; $i<$Logo->length; $i++) {
+        $URL["Logo".$i] = $Logo->item($i)->nodeValue;
     }
 
     # //md:ArtifactResolutionService
-    $ArtifactResolutionService = $sxe->xpath('/md:EntityDescriptor//md:ArtifactResolutionService');
-    for($i=0; $i<count($ArtifactResolutionService); $i++) {
-        $URL['ArtifactResolutionService'.$i] = (string) $ArtifactResolutionService[$i]['Location'];
+    $ArtifactResolutionService = $xpath->query("/md:EntityDescriptor//md:ArtifactResolutionService");
+    for($i=0; $i<$ArtifactResolutionService->length; $i++) {
+        $URL["ArtifactResolutionService".$i] = $ArtifactResolutionService->item($i)->getAttribute("Location");
     }
 
     # //md:SingleLogoutService
-    $SingleLogoutService = $sxe->xpath('/md:EntityDescriptor//md:SingleLogoutService');
-    for($i=0; $i<count($SingleLogoutService); $i++) {
-        $URL['SingleLogoutService'.$i] = (string) $SingleLogoutService[$i]['Location'];
+    $SingleLogoutService = $xpath->query("/md:EntityDescriptor//md:SingleLogoutService");
+    for($i=0; $i<$SingleLogoutService->length; $i++) {
+        $URL["SingleLogoutService".$i] = $SingleLogoutService->item($i)->getAttribute("Location");
     }
 
     # //md:SingleSignOnService
-    $SingleSignOnService = $sxe->xpath('/md:EntityDescriptor//md:SingleSignOnService');
-    for($i=0; $i<count($SingleSignOnService); $i++) {
-        $URL['SingleSignOnService'.$i] = (string) $SingleSignOnService[$i]['Location'];
+    $SingleSignOnService = $xpath->query("/md:EntityDescriptor//md:SingleSignOnService");
+    for($i=0; $i<$SingleSignOnService->length; $i++) {
+        $URL["SingleSignOnService".$i] = $SingleSignOnService->item($i)->getAttribute("Location");
     }
 
     # //md:AttributeService
-    $AttributeService = $sxe->xpath('/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService');
-    for($i=0; $i<count($AttributeService); $i++) {
-        $URL['AttributeService'.$i] = (string) $AttributeService[$i]['Location'];
+    $AttributeService = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService");
+    for($i=0; $i<$AttributeService->length; $i++) {
+        $URL["AttributeService".$i] = $AttributeService->item($i)->getAttribute("Location");
     }
 
     # //init:RequestInitiator
-    $RequestInitiator = $sxe->xpath('/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/init:RequestInitiator');
-    for($i=0; $i<count($RequestInitiator); $i++) {
-        $URL['RequestInitiator'.$i] = (string) $RequestInitiator[$i]['Location'];
+    $RequestInitiator = $xpath->query("/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/init:RequestInitiator");
+    for($i=0; $i<$RequestInitiator->length; $i++) {
+        $URL["RequestInitiator".$i] = $RequestInitiator->item($i)->getAttribute("Location");
     }
 
     # //idpdisc:DiscoveryResponse
-    $DiscoveryResponse = $sxe->xpath('/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/idpdisc:DiscoveryResponse');
-    for($i=0; $i<count($DiscoveryResponse); $i++) {
-        $URL['DiscoveryResponse'.$i] = (string) $DiscoveryResponse[$i]['Location'];
+    $DiscoveryResponse = $xpath->query("/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/idpdisc:DiscoveryResponse");
+    for($i=0; $i<$DiscoveryResponse->length; $i++) {
+        $URL["DiscoveryResponse".$i] = $DiscoveryResponse->item($i)->getAttribute("Location");
     }
 
     # //md:AssertionConsumerService
-    $AssertionConsumerService = $sxe->xpath('/md:EntityDescriptor/md:SPSSODescriptor/md:AssertionConsumerService');
-    for($i=0; $i<count($AssertionConsumerService); $i++) {
-        $URL['AssertionConsumerService'.$i] = (string) $AssertionConsumerService[$i]['Location'];
+    $AssertionConsumerService = $xpath->query("/md:EntityDescriptor/md:SPSSODescriptor/md:AssertionConsumerService");
+    for($i=0; $i<$AssertionConsumerService->length; $i++) {
+        $URL["AssertionConsumerService".$i] = $AssertionConsumerService->item($i)->getAttribute("Location");
     }
 
     $messages = array();
