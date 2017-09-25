@@ -304,32 +304,34 @@ function uiinfoCheck($metadata) {
 /* validation function: //md:Organization
  */
 function organizationCheck($metadata) {
-    $sxe = new SimpleXMLElement(file_get_contents($metadata));
-    $sxe->registerXPathNamespace('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $organization = $sxe->xpath('/md:EntityDescriptor/md:Organization');
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+    $organization = $xpath->query("/md:EntityDescriptor/md:Organization");
 
     $messages = array();
-    if(count($organization) == 0) {
+    if($organization->length == 0) {
         array_push($messages, "Organization missing.");
     } else {
-        $OrganizationNameCS        = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="cs"]');
-        $OrganizationNameEN        = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="en"]');
-        $OrganizationDisplayNameCS = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="cs"]');
-        $OrganizationDisplayNameEN = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="en"]');
-        $OrganizationURLCS         = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="cs"]');
-        $OrganizationURLEN         = $sxe->xpath('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="en"]');
+        $OrganizationNameCS        = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="cs"]');
+        $OrganizationNameEN        = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="en"]');
+        $OrganizationDisplayNameCS = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="cs"]');
+        $OrganizationDisplayNameEN = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="en"]');
+        $OrganizationURLCS         = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="cs"]');
+        $OrganizationURLEN         = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="en"]');
 
-        if(empty($OrganizationNameCS))
+        if($OrganizationNameCS->length === 0)
             array_push($messages, "Organization->OrganizationName/cs missing.");
-        if(empty($OrganizationNameEN))
+        if($OrganizationNameEN->length === 0)
             array_push($messages, "Organization->OrganizationName/en missing.");
-        if(empty($OrganizationDisplayNameCS))
+        if($OrganizationDisplayNameCS->length === 0)
             array_push($messages, "Organization->OrganizationDisplayName/cs missing.");
-        if(empty($OrganizationDisplayNameEN))
+        if($OrganizationDisplayNameEN->length === 0)
             array_push($messages, "Organization->OrganizationDisplayName/en missing.");
-        if(empty($OrganizationURLCS))
+        if($OrganizationURLCS->length === 0)
             array_push($messages, "Organization->OrganizationURL/cs missing.");
-        if(empty($OrganizationURLEN))
+        if($OrganizationURLEN->length === 0)
             array_push($messages, "Organization->OrganizationURL/en missing.");
     }
 
