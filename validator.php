@@ -181,20 +181,23 @@ function scopeCheck($metadata) {
 
 /* validation function: //shibmd:Scope[@regexp=false]
  */
-function scopeRegexpCheck ($metadata) {
-    $sxe = new SimpleXMLElement (file_get_contents($metadata));
-    $sxe->registerXPathNamespace ('shibmd','urn:mace:shibboleth:metadata:1.0');
-    $result = $sxe->xpath ('//shibmd:Scope[@regexp]');
-    $resultCount = count ($result);
+function scopeRegexpCheck($metadata) {
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("shibmd", "urn:mace:shibboleth:metadata:1.0");
+    $scopes = $xpath->query("//shibmd:Scope[@regexp]");
 
-    $regexpValue = array ();
-    for ($i=0; $i<$resultCount; $i++) {
-        $regexpValue[$i] = (string) $result[$i]['regexp'];
+    $regexpValue = array();
+    if($scopes->length > 0) {
+        foreach($scopes as $s) {
+            array_push($regexpValue, $s->getAttribute("regexp"));
+        }
     }
 
     $regexpResult = -1;
-    foreach ($regexpValue as $regexp) {
-        if (strcmp ($regexp, 'false') === 0) {
+    foreach($regexpValue as $regexp) {
+        if(strcmp($regexp, "false") === 0) {
             $returncode = 0;
         } else {
             $returncode = 2;
@@ -203,14 +206,14 @@ function scopeRegexpCheck ($metadata) {
         $regexpResult = max ($regexpResult, $returncode);
     }
 
-    $regexpMessage = array (
+    $regexpMessage = array(
         -1 => 'Something went wrong with scope regexp check.',
          #0 => 'Scope regexp is false. That is OK.',
          0 => '',
          2 => 'Scope regexp must be "false"!',
     );
 
-    return array ($regexpResult, $regexpMessage[$regexpResult]);
+    return array($regexpResult, $regexpMessage[$regexpResult]);
 }
 
 /* validation function: //shibmd:Scope === //EntityDescriptor[@entityID] substring
