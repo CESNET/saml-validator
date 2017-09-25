@@ -217,42 +217,44 @@ function scopeRegexpCheck($metadata) {
 
 /* validation function: //shibmd:Scope === //EntityDescriptor[@entityID] substring
  */
-function scopeValueCheck ($metadata) {
-    $sxe = new SimpleXMLElement (file_get_contents($metadata));
-    $sxe->registerXPathNamespace ('md','urn:oasis:names:tc:SAML:2.0:metadata');
-    $entityID = $sxe->xpath ('/md:EntityDescriptor[@entityID]');
-    $entityID = ((string) $entityID[0]['entityID']);
+function scopeValueCheck($metadata) {
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+    $xpath->registerNamespace("shibmd", "urn:mace:shibboleth:metadata:1.0");
+    $entityDescriptor = $xpath->query("/md:EntityDescriptor");
+    $scopes = $xpath->query("//shibmd:Scope[@regexp]");
+
+    $entityID = $entityDescriptor->item(0)->getAttribute("entityID");
     $pattern = '/https:\/\/([a-z0-9_\-\.]*)\/.*/i';
     $replacement = '$1';
     $hostname = preg_replace ($pattern, $replacement, $entityID);
 
-    $sxe->registerXPathNamespace ('shibmd','urn:mace:shibboleth:metadata:1.0');
-    $result = $sxe->xpath ('//shibmd:Scope[@regexp]');
-    $resultCount = count ($result);
-
     $scopeValue = array ();
-    for ($i=0; $i<$resultCount; $i++) {
-        $scopeValue[$i] = (string) $result[$i][0];
+    if($scopes->length > 0) {
+        foreach($scopes as $s) {
+            array_push($scopeValue, $s->nodeValue);
+        }
     }
 
     $scopeResult = -1;
-    foreach ($scopeValue as $scope) {
-        if (preg_match ("/$scope/", $hostname)) {
+    foreach($scopeValue as $scope) {
+        if(preg_match("/$scope/", $hostname)) {
             $regResult = 0;
         } else {
             $regResult = 2;
         }
-        $scopeResult = max ($scopeResult, $regResult);
+        $scopeResult = max($scopeResult, $regResult);
     }
 
-    $scopeMessage = array (
+    $scopeMessage = array(
         -1 => 'Something went wrong with scope value check.',
-         #0 => 'Scope value is a substring of the entityID. That is OK.',
          0 => '',
          2 => 'Scope value must be a substring of the entityID!',
     );
 
-    return array ($scopeResult, $scopeMessage[$scopeResult]);
+    return array($scopeResult, $scopeMessage[$scopeResult]);
 }
 
 /* validation function: //mdui:UIInfo
