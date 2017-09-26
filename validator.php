@@ -114,6 +114,8 @@ function certificateCheck($metadata) {
     $xpath = new DOMXpath($doc);
     $xpath->registerNameSpace("ds", "http://www.w3.org/2000/09/xmldsig#");
     $certificates = $xpath->query("//ds:X509Certificate");
+    $certsInfo = array();
+    $messages = array();
 
     if($certificates->length > 0) {
         foreach($certificates as $cert) {
@@ -123,23 +125,49 @@ function certificateCheck($metadata) {
             $cert_validFor = floor((strtotime($cert_validTo)-time ())/(60*60*24));
             $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
 
-            if(($pub_key["bits"] >= $GLOBALS["KEY_SIZE"]) && ($cert_validFor >= $GLOBALS["CERTIFICATE_VALIDITY"])) {
-                $returncode = 0;
-                $message = "";
-            } elseif(($pub_key["bits"] < $GLOBALS["KEY_SIZE"]) && ($cert_validFor >= $GLOBALS["CERTIFICATE_VALIDITY"])) {
-                $returncode = 2;
-                $message = "Public key size has to be greater than or equal to " . $GLOBALS["KEY_SIZE"] . ". Yours is " . $pub_key["bits"] . ".";
-            } elseif(($pub_key["bits"] >= $GLOBALS["KEY_SIZE"]) && ($cert_validFor < $GLOBALS["CERTIFICATE_VALIDITY"])) {
-                $returncode = 2;
-                $message = "Certificate should be valid at least for " . $GLOBALS["CERTIFICATE_VALIDITY"] . " days. Yours is valid only for " . $cert_validFor . ".";
-            } else {
-                $returncode = 2;
-                $message = "Certificate should be valid at least for " . $GLOBALS["CERTIFICATE_VALIDITY"] . " days. Yours is valid only for " . $cert_validFor . ". And public key size has to be greater than or equal to " . $GLOBALS["KEY_SIZE"] . " bits. Yours is " . $pub_key["bits"] . ".";
-            }
+            array_push($certsInfo, array($cert_validTo, $cert_validFor, $pub_key["bits"]));
         }
     } else {
+        array_push($messages, "No certificate found.");
+    }
+
+    $certsResults = array_fill(0, count($certsInfo), array_fill(0, 2, null));
+    for($i=0; $i<count($certsInfo); $i++) {
+        if($certsInfo[$i][2] < $GLOBALS["KEY_SIZE"]) {
+            $certsResults[$i][0] = "Public key size must be at least " . $GLOBALS["KEY_SIZE"] . " bits. Yours is only " . $certsInfo[$i][2] . ".";
+        }
+
+        if($certsInfo[$i][1] < $GLOBALS["CERTIFICATE_VALIDITY"]) {
+            $certsResults[$i][1] = "Certificate must be valid at least for " . $GLOBALS["CERTIFICATE_VALIDITY"] . " days. Yours is " . $certsInfo[$i][1] . ".";
+        }
+    }
+
+    for($i=0; $i<count($certsResults); $i++) {
+        if($i%2 === 0) {
+            continue;
+        }
+
+        if(($certsResults[$i][0] !== null) || ($certsResults[$i][1] !== null)) {
+            foreach($certsResults[$i] as $m) {
+                array_push($messages, $m);
+            }
+        }
+
+        if($certsResults[$i][0] !== null) {
+            foreach($certsResults[$i] as $m) {
+                array_push($messages, $m);
+            }
+        }
+    }
+
+    $message = "";
+    if(count($messages) > 0) {
         $returncode = 2;
-        $message    = "No certificate found.";
+        for($i=0; $i<=count($messages); $i++) {
+            $message .= array_pop($messages) . " ";
+        }
+    } else {
+        $returncode = 0;
     }
 
     return array($returncode, $message);
