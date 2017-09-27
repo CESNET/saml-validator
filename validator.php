@@ -76,6 +76,22 @@ function isIDP ($metadata) {
     }
 }
 
+/* generates returncode and a warning/error message on the basis of $messages
+ */
+function generateResult($messages) {
+    $message = "";
+    if(count($messages) > 0) {
+        $returncode = 2;
+        foreach($messages as $m) {
+            $message .= $m . " ";
+        }
+    } else {
+        $returncode = 0;
+    }
+
+    return array($returncode, $message);
+}
+
 /* returns a string containing XML errors produced by libxml
  */
 function libxml_display_errors() {
@@ -160,16 +176,7 @@ function certificateCheck($metadata) {
         }
     }
 
-    $message = "";
-    if(count($messages) > 0) {
-        $returncode = 2;
-        for($i=0; $i<=count($messages); $i++) {
-            $message .= array_pop($messages) . " ";
-        }
-    } else {
-        $returncode = 0;
-    }
-
+    list($returncode, $message) = generateResult($messages);
     return array($returncode, $message);
 }
 
@@ -192,16 +199,7 @@ function scopeCheck($metadata) {
         array_push($messages, "Either 0 or 1 AttributeAuthorityDescriptor/Scope allowed.");
     }
 
-    $message = "";
-    if(count($messages) > 0) {
-        $returncode = 2;
-        for($i=0; $i<=count($messages); $i++) {
-            $message .= array_pop($messages) . " ";
-        }
-    } else {
-        $returncode = 0;
-    }
-
+    list($returncode, $message) = generateResult($messages);
     return array($returncode, $message);
 }
 
@@ -318,16 +316,7 @@ function uiinfoCheck($metadata) {
            array_push($messages, "UIInfo->Logo missing.");
     }
 
-    $message = "";
-    if(count($messages) > 0) {
-       $returncode = 2;
-       foreach($messages as $m) {
-           $message .= $m . " ";
-       }
-    } else {
-        $returncode = 0;
-    }
-
+    list($returncode, $message) = generateResult($messages);
     return array($returncode, $message);
 }
 
@@ -365,17 +354,7 @@ function organizationCheck($metadata) {
             array_push($messages, "Organization->OrganizationURL/en missing.");
     }
 
-    $returncode = null;
-    $message    = null;
-    if(count($messages) > 0) {
-        $returncode = 2;
-        foreach($messages as $m) {
-            $message .= $m . " ";
-        }
-    } else {
-        $returncode = 0;
-    }
-
+    list($returncode, $message) = generateResult($messages);
     return array($returncode, $message);
 }
 
@@ -409,17 +388,7 @@ function contactPersonTechnicalCheck($metadata) {
         }
     }
 
-    $returncode = null;
-    $message    = null;
-    if(count($messages) > 0) {
-        $returncode = 2;
-        foreach($messages as $m) {
-            $message .= $m . " ";
-        }
-    } else {
-        $returncode = 0;
-    }
-
+    list($returncode, $message) = generateResult($messages);
     return array($returncode, $message);
 }
 
@@ -527,16 +496,7 @@ function checkHTTPS($metadata) {
         }
     }
 
-    $message = "";
-    if(count($messages) > 0) {
-        $returncode = 2;
-        for($i=0; $i<count($messages); $i++) {
-            $message .= array_pop($messages) . " ";
-        }
-    } else {
-        $returncode = 0;
-    }
-
+    list($returncode, $message) = generateResult($messages);
     return array($returncode, $message);
 }
 
