@@ -500,6 +500,49 @@ function checkHTTPS($metadata) {
     return array($returncode, $message);
 }
 
+/* validation function: AttributeAuthorityDescriptor[@protocolSupportEnumeration]
+ */
+function checkAAD($metadata) {
+    $doc = new DOMDocument();
+    $doc->load($metadata);
+    $xpath = new DOMXpath($doc);
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+
+    $SAML2binding  = "urn:oasis:names:tc:SAML:2.0:bindings:SOAP";
+    $SAML2protocol = "urn:oasis:names:tc:SAML:2.0:protocol";
+
+    $messages = array();
+
+    $AttributeService = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService");
+    for($i=0; $i<$AttributeService->length; $i++) {
+        if(strcmp($AttributeService->item($i)->getAttribute("Binding"), $SAML2binding) === 0) {
+            $AttributeAuthorityDescriptor = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor");
+            $protocols = $AttributeAuthorityDescriptor->item(0)->getAttribute("protocolSupportEnumeration");
+            if(!preg_match("/$SAML2protocol/", $protocols)) {
+                array_push($messages, "SAML 2.0 binding requires SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration].");
+            }
+        }
+    }
+
+    $AttributeAuthorityDescriptor = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor");
+    $protocols = $AttributeAuthorityDescriptor->item(0)->getAttribute("protocolSupportEnumeration");
+    if(preg_match("/$SAML2protocol/", $protocols)) {
+        $AttributeService = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService");
+        $tmpResult = $AttributeService->length;
+        for($i=0; $i<$AttributeService->length; $i++) {
+            if(strcmp($SAML2binding, $AttributeService->item($i)->getAttribute("Binding")) !== 0) {
+                $tmpResult--;
+            }
+        }
+        if($tmpResult < 1) {
+                array_push($messages, "SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration] requires SAML 2.0 binding.");
+        }
+    }
+
+    list($returncode, $message) = generateResult($messages);
+    return array($returncode, $message);
+}
+
 /* filename: metadata URL
  */
 $filename = !empty ($_GET["filename"]) ? $_GET["filename"] : 0;
@@ -556,6 +599,7 @@ if($validations["validMetadata"][0] === 0) {
     $validations["contactPersonTechnicalCheck"] = contactPersonTechnicalCheck($metadata);
     $validations["checkRepublishRequest"] = checkRepublishRequest($metadata);
     $validations["checkHTTPS"] = checkHTTPS($metadata);
+    $validations["checkAAD"] = checkAAD($metadata);
 }
 
 /* get result and produce XML
