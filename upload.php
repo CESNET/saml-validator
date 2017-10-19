@@ -17,26 +17,47 @@ function checkUploadDir($dir) {
     }
 }
 
+/* fileOrLink() checks if we have a metadata file or a metadata URL
+ */
+function fileOrLink($file, $link) {
+    if(($file["size"] === 0) && (empty($link))) {
+        throw new Exception("Neither metadata file nor metadata URL specified.");
+    } elseif(($file["size"] > 0) && (!empty($link))) {
+        throw new Exception("Either upload metadata file or insert metadata URL, but not both.");
+    } elseif($file["size"] > 0) {
+        return $file;
+    } elseif(!empty($link)) {
+        # FIXME: check if we have an HTTPS URL
+        return $link;
+    }
+}
+
 /* uploadFile() uploads a file to upload directory and returns the URL address
  * of the file
  */
-function uploadFile($file) {
+function uploadFile($metadata) {
     # FIXME: check mime type of the uploaded file and if not text/xml, don't upload it!
-    if(!file_exists($file["tmp_name"])) {
-        throw new Exception("$file[name] file could not be uploaded.");
-    } else {
-        $destinationFile = sha1_file($file["tmp_name"]) . uniqid("_") . ".xml";
-
-        if(!move_uploaded_file($file["tmp_name"], $GLOBALS["UPLOAD_DIR"] . $destinationFile)) {
-            throw new Exception("Failed to move uploaded file.");
+    if(is_array($metadata)) {
+        if(!file_exists($metadata["tmp_name"])) {
+            throw new Exception("$metadata[name] file could not be uploaded.");
         } else {
-            return "https://"
-                   . $_SERVER["HTTP_HOST"]
-                   . pathinfo($_SERVER["DOCUMENT_URI"], PATHINFO_DIRNAME)
-                   . "/"
-                   . $GLOBALS["UPLOAD_DIR"]
-                   . $destinationFile;
+            $destinationFile = sha1_file($metadata["tmp_name"]) . uniqid("_") . ".xml";
+
+            if(!move_uploaded_file($metadata["tmp_name"], $GLOBALS["UPLOAD_DIR"] . $destinationFile)) {
+                throw new Exception("Failed to move uploaded file.");
+            } else {
+                return "https://"
+                       . $_SERVER["HTTP_HOST"]
+                       . pathinfo($_SERVER["DOCUMENT_URI"], PATHINFO_DIRNAME)
+                       . "/"
+                       . $GLOBALS["UPLOAD_DIR"]
+                       . $destinationFile;
+            }
         }
+    } elseif(is_string($metadata)) {
+        return $metadata;
+    } else {
+        throw new Exception("Neither file nor URL specified.");
     }
 }
 
@@ -54,7 +75,7 @@ function validateMetadata($metadata) {
  */
 try {
     checkUploadDir($UPLOAD_DIR);
-    validateMetadata(uploadFile($_FILES["metadata"]));
+    validateMetadata(uploadFile(fileOrLink($_FILES["file"], $_POST["link"])));
 } catch(Exception $e) {
     echo "Caught exception: ", $e->getMessage(), "\n";
 }

@@ -14,8 +14,11 @@
 <p>At this page, you can validate SAML metadata for compliance with <a
 href="https://www.eduid.cz">eduID.cz</a> rules.</p>
 
+<p>You can upload a metadata as a file or insert an link to a metadata.</p>
+
 <form action="./upload.php" method="post" enctype="multipart/form-data">
-    <input type="file" accept="text/xml" name="metadata" id="metadata"><br>
+    Choose metadata file: <input type="file" accept="text/xml" name="file" id="file"><br>
+    Insert metadata URL: <input type="input" name="link" id="link" size="50"><br>
     <input type="submit" value="Validate metadata" name="submit">
 </form>
 
