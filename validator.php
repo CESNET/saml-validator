@@ -592,6 +592,7 @@ if($validations["validMetadata"][0] === 0) {
         $validations["scopeCheck"] = scopeCheck($metadata);
         $validations["scopeRegexpCheck"] = scopeRegexpCheck($metadata);
         $validations["scopeValueCheck"] = scopeValueCheck($metadata);
+        $validations["checkAAD"] = checkAAD($metadata);
     }
     $validations["certificateCheck"] = certificateCheck($metadata);
     $validations["uiinfoCheck"] = uiinfoCheck($metadata);
@@ -599,7 +600,6 @@ if($validations["validMetadata"][0] === 0) {
     $validations["contactPersonTechnicalCheck"] = contactPersonTechnicalCheck($metadata);
     $validations["checkRepublishRequest"] = checkRepublishRequest($metadata);
     $validations["checkHTTPS"] = checkHTTPS($metadata);
-    $validations["checkAAD"] = checkAAD($metadata);
 }
 
 /* get result and produce XML
