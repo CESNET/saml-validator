@@ -40,7 +40,7 @@ na tlačítko <em>Zpět</em> ve vašem webovém prohlížeči.</p>
 
 <form action="./upload.php" method="post" enctype="multipart/form-data">
     Soubor s metadaty: <input type="file" accept="text/xml" name="file" id="file"><br>
-    URL adresa metadat: <input type="input" name="link" id="link" size="50"><br>
+    URL adresa metadat: <input type="url" name="link" id="link" size="50"><br>
     <input type="submit" value="Validovat metadata" name="submit">
 </form>
 
@@ -74,7 +74,7 @@ browser.</p>
 
 <form action="./upload.php" method="post" enctype="multipart/form-data">
     Choose metadata file: <input type="file" accept="text/xml" name="file" id="file"><br>
-    Insert metadata URL: <input type="input" name="link" id="link" size="50"><br>
+    Insert metadata URL: <input type="url" name="link" id="link" size="50"><br>
     <input type="submit" value="Validate metadata" name="submit">
 </form>
 
