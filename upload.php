@@ -2,7 +2,7 @@
 
 /* $UPLOAD_DIR variable defines a directory where to upload the files
  */
-$UPLOAD_DIR  = "tmp/";
+$UPLOAD_DIR         = "tmp/";
 $ALLOWED_FILE_TYPES = array("text/xml");
 
 /* checkUploadDir() checks for upload directory
@@ -14,7 +14,6 @@ function checkUploadDir($dir) {
 
     if(!is_writable($dir)) {
         throw new Exception("$dir directory is not writable by web server.");
-        # FIXME: try to create $dir
     }
 }
 
@@ -44,7 +43,6 @@ function fileOrLink($file, $link) {
  * of the file
  */
 function uploadFile($metadata) {
-    # FIXME: check mime type of the uploaded file and if not text/xml, don't upload it!
     if(is_array($metadata)) {
         if(!file_exists($metadata["tmp_name"])) {
             throw new Exception("$metadata[name] file could not be uploaded.");
