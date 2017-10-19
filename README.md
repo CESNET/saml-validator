@@ -22,7 +22,7 @@ On Debian 9 (Stretch) you need a web server and a PHP processor with XML support
 $ apt install apache2 php php-xml
 ```
 
-You might prefer to disable directory listing by adding the following lines to your Apache configuration. Anyway, an `index.html` file is available, so if this one is loaded by default (most probably), you do not need to disable directory listing.
+You might prefer to disable directory listing by adding the following lines to your Apache configuration. Anyway, an `index.php` file is available, so if this one is loaded by default (most probably), you do not need to disable directory listing.
 
 ```apache
 <Directory /var/www/saml-validator/>
