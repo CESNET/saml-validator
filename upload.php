@@ -3,6 +3,7 @@
 /* $UPLOAD_DIR variable defines a directory where to upload the files
  */
 $UPLOAD_DIR  = "tmp/";
+$ALLOWED_FILE_TYPES = array("text/xml");
 
 /* checkUploadDir() checks for upload directory
  */
@@ -48,17 +49,21 @@ function uploadFile($metadata) {
         if(!file_exists($metadata["tmp_name"])) {
             throw new Exception("$metadata[name] file could not be uploaded.");
         } else {
-            $destinationFile = sha1_file($metadata["tmp_name"]) . uniqid("_") . ".xml";
+            if(in_array($metadata["type"], $GLOBALS["ALLOWED_FILE_TYPES"])) {
+                $destinationFile = sha1_file($metadata["tmp_name"]) . uniqid("_") . ".xml";
 
-            if(!move_uploaded_file($metadata["tmp_name"], $GLOBALS["UPLOAD_DIR"] . $destinationFile)) {
-                throw new Exception("Failed to move uploaded file.");
+                if(!move_uploaded_file($metadata["tmp_name"], $GLOBALS["UPLOAD_DIR"] . $destinationFile)) {
+                    throw new Exception("Failed to move uploaded file.");
+                } else {
+                    return "https://"
+                           . $_SERVER["HTTP_HOST"]
+                           . pathinfo($_SERVER["DOCUMENT_URI"], PATHINFO_DIRNAME)
+                           . "/"
+                           . $GLOBALS["UPLOAD_DIR"]
+                           . $destinationFile;
+                }
             } else {
-                return "https://"
-                       . $_SERVER["HTTP_HOST"]
-                       . pathinfo($_SERVER["DOCUMENT_URI"], PATHINFO_DIRNAME)
-                       . "/"
-                       . $GLOBALS["UPLOAD_DIR"]
-                       . $destinationFile;
+                throw new Exception("Only XML documents allowed.");
             }
         }
     } elseif(is_string($metadata)) {
