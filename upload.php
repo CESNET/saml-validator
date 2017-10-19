@@ -27,8 +27,15 @@ function fileOrLink($file, $link) {
     } elseif($file["size"] > 0) {
         return $file;
     } elseif(!empty($link)) {
-        # FIXME: check if we have an HTTPS URL
-        return $link;
+        if(filter_var($link, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
+            if(preg_match("/^https\:/", $link)) {
+                return $link;
+            } else {
+                throw new Exception("You have to provide HTTPS URL address.");
+            }
+        } else {
+            throw new Exception("No proper URL address specified.");
+        }
     }
 }
 
