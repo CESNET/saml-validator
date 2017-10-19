@@ -1,6 +1,6 @@
 <?php 
 
-if(preg_match("/cz|sk/", $_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
+if(preg_match("/cs|sk/", $_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
     $locale = "czech";
 } else {
     $locale = "english";
