@@ -2,13 +2,13 @@ body {
     background-color: #fff;
     color: #333;
     font-size: 100%;
+    margin: 1em;
 }
 
 form {
     border: 1px solid #999;
-    border-radius: 0.5em;
     padding: 1em;
-    margin: 1em;
+    margin-bottom: 1em;
     width: 40em;
 }
 
