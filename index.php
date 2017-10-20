@@ -35,6 +35,15 @@ kliknout na tlačítko <em>Validovat metadata</em> pro získání výsledku.</p>
 XML stránku a budete-li chtít otestovat další metadata, budete muset kliknout
 na tlačítko <em>Zpět</em> ve vašem webovém prohlížeči.</p>
 
+<p>
+<em>Nápověda:</em> Standardní umístění metadat:</p>
+
+<ul>
+    <li>Shibboleth IdP: <code>https://server.domena.cz/idp/shibboleth</code></li>
+    <li>Shibboleth SP: <code>https://server.domena.cz/Shibboleth.sso/Metadata</code></li>
+    <li>SimpleSAMLphp: <code>https://server.domena.cz/simplesaml/module.php/saml/sp/metadata.php/default-sp</code></li>
+</ul>
+
 <form action="./upload.php" method="post" enctype="multipart/form-data">
     Soubor s metadaty: <input type="file" accept="text/xml" name="file" id="file"><br>
     URL adresa metadat: <input type="url" name="link" id="link" size="50" placeholder="URL adresa musí být HTTPS"><br>
@@ -67,6 +76,15 @@ href="https://rr.cesnet.cz/jagger/">Jagger</a> to decide whether a metadata
 is valid or not, you will be redirected to a new XML-only page and in order to
 test another metadata, you will have to click <em>Back</em> button in your web
 browser.</p>
+
+<p>
+<em>Tip:</em> Default metadata location:</p>
+
+<ul>
+    <li>Shibboleth IdP: <code>https://server.domain.tld/idp/shibboleth</code></li>
+    <li>Shibboleth SP: <code>https://server.domain.tld/Shibboleth.sso/Metadata</code></li>
+    <li>SimpleSAMLphp: <code>https://server.domain.tld/simplesaml/module.php/saml/sp/metadata.php/default-sp</code></li>
+</ul>
 
 <form action="./upload.php" method="post" enctype="multipart/form-data">
     Choose metadata file: <input type="file" accept="text/xml" name="file" id="file"><br>
