@@ -10,7 +10,7 @@ $ mkdir /var/www/saml-validator/
 $ git clone https://github.com/JanOppolzer/saml-validator.git /var/www/saml-validator/
 ```
 
-For *SAML-validator* to work, you need a temporary directory defined by a `$TMP\_DIRECTORY` variable (default value is `tmp/`) writtable by the web-server user (`www-data` in Debian). It is used for storing metadata to validate:
+For *SAML-validator* to work, you need a temporary directory defined by a `$TMP_DIRECTORY` variable (default value is `tmp/`) writtable by the web-server user (`www-data` in Debian). It is used for storing metadata to validate:
 ```bash
 $ mkdir /var/www/saml-validator/tmp/
 $ chown www-data:www-data /var/www/saml-validator/tmp/
