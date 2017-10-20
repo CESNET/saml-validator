@@ -55,7 +55,7 @@ function uploadFile($metadata) {
                 } else {
                     return "https://"
                            . $_SERVER["HTTP_HOST"]
-                           . pathinfo($_SERVER["DOCUMENT_URI"], PATHINFO_DIRNAME)
+                           . pathinfo($_SERVER["REQUEST_URI"], PATHINFO_DIRNAME)
                            . "/"
                            . $GLOBALS["UPLOAD_DIR"]
                            . $destinationFile;
@@ -76,7 +76,7 @@ function uploadFile($metadata) {
 function validateMetadata($metadata) {
     header("Location: https://"
          . $_SERVER["HTTP_HOST"]
-         . pathinfo($_SERVER["DOCUMENT_URI"], PATHINFO_DIRNAME)
+         . pathinfo($_SERVER["REQUEST_URI"], PATHINFO_DIRNAME)
          . "/validator.php?filename="
          . $metadata);
 }
