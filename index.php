@@ -74,7 +74,7 @@ browser.</p>
 
 <form action="./upload.php" method="post" enctype="multipart/form-data">
     Choose metadata file: <input type="file" accept="text/xml" name="file" id="file"><br>
-    Insert metadata URL: <input type="url" name="link" id="link" size="50"><br>
+    Insert metadata URL: <input type="url" name="link" id="link" size="50" placeholder="URL address must be HTTPS"><br>
     <input type="submit" value="Validate metadata" name="submit">
 </form>
 
