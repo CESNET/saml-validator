@@ -2,8 +2,6 @@
 
 if(preg_match("/cs|sk/", $_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
     $locale = "czech";
-} else {
-    $locale = "english";
 }
 
 ?>
@@ -22,7 +20,6 @@ if(preg_match("/cs|sk/", $_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
 <?php
 
 switch($locale) {
-    // Czech
     case "czech":
 ?>
 <h1>SAML-validátor</h1>
@@ -54,8 +51,7 @@ stránku na GitHubu.</p>
 </footer>
 <?php
         break;
-    // English
-    case "english":
+
     default:
 ?>
 <h1>SAML-validator</h1>
