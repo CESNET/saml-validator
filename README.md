@@ -3,7 +3,7 @@
 **For more information, look at the [SAML-validator Wiki][] page.**
 
 ## Installation
-If you would like to test SAML-validator, say, in your [JAGGER][] instance or elsewhere, you can run it from my site ([snotra-saml-validator][]). However, this machine might not be up 24/7 and the code might be broken as this machine is intended for developing. You have been warned. Thus, you should clone the SAML-validator repository to your machine.
+If you would like to test SAML-validator, say, in your [JAGGER][] instance or elsewhere, you can run it at [rr.cesnet.cz/saml-validator][]. Anyway, I recommend you to clone the repository to your own machine.
 
 ```bash
 $ mkdir /var/www/saml-validator/
@@ -32,5 +32,5 @@ You might prefer to disable directory listing by adding the following lines to y
 
 [SAML-validator Wiki]: https://github.com/JanOppolzer/saml-validator/wiki
 [JAGGER]: http://jagger.heanet.ie/
-[snotra-saml-validator]: https://snotra.cesnet.cz/~jop/saml-validator/
+[rr.cesnet.cz/saml-validator]: https://rr.cesnet.cz/saml-validator/
 
