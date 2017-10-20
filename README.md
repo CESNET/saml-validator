@@ -3,14 +3,14 @@
 **For more information, look at the [SAML-validator Wiki][] page.**
 
 ## Installation
-If you would like to test SAML-validator, say, in your [JAGGER][] instance or elsewhere, you can run it at [rr.cesnet.cz/saml-validator][]. Anyway, I recommend you to clone the repository to your own machine.
+If you would like to test *SAML-validator*, say, in your [JAGGER][] instance or elsewhere, you can run it at [rr.cesnet.cz/saml-validator][]. Anyway, I recommend you to clone the repository to your own machine.
 
 ```bash
 $ mkdir /var/www/saml-validator/
 $ git clone https://github.com/JanOppolzer/saml-validator.git /var/www/saml-validator/
 ```
 
-For SAML-validator to work, you need a temporary directory defined by a $TMP\_DIRECTORY variable (default value is `tmp/`) writtable by the web-server user (`www-data` in Debian). It is used for storing metadata to validate:
+For *SAML-validator* to work, you need a temporary directory defined by a `$TMP\_DIRECTORY` variable (default value is `tmp/`) writtable by the web-server user (`www-data` in Debian). It is used for storing metadata to validate:
 ```bash
 $ mkdir /var/www/saml-validator/tmp/
 $ chown www-data:www-data /var/www/saml-validator/tmp/
