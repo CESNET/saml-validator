@@ -5,6 +5,11 @@ body {
     margin: 1em;
 }
 
+code {
+    background-color: #ddd;
+    font-size: 100%;
+}
+
 form {
     border: 1px solid #999;
     padding: 1em;
