@@ -44,6 +44,9 @@ function fileOrLink($file, $link) {
  */
 function uploadFile($metadata) {
     if(is_array($metadata)) {
+        if($metadata["size"] > 100000) {
+            throw new Exception("$metadata[name] exceeded file size limit.");
+        }
         if(!file_exists($metadata["tmp_name"])) {
             throw new Exception("$metadata[name] file could not be uploaded.");
         } else {
