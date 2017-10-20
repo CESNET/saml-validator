@@ -514,32 +514,30 @@ function checkAAD($metadata) {
     $messages = array();
 
     $AttributeAuthorityDescriptor = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor");
-    if($AttributeAuthorityDescriptor->length > 0) {
-    $AttributeService = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService");
-    for($i=0; $i<$AttributeService->length; $i++) {
-        if(strcmp($AttributeService->item($i)->getAttribute("Binding"), $SAML2binding) === 0) {
-            $AttributeAuthorityDescriptor = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor");
-            $protocols = $AttributeAuthorityDescriptor->item(0)->getAttribute("protocolSupportEnumeration");
-            if(!preg_match("/$SAML2protocol/", $protocols)) {
-                array_push($messages, "SAML 2.0 binding requires SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration].");
-            }
-        }
-    }
 
-    $AttributeAuthorityDescriptor = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor");
-    $protocols = $AttributeAuthorityDescriptor->item(0)->getAttribute("protocolSupportEnumeration");
-    if(preg_match("/$SAML2protocol/", $protocols)) {
+    if($AttributeAuthorityDescriptor->length > 0) {
         $AttributeService = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService");
-        $tmpResult = $AttributeService->length;
+        $protocols = $AttributeAuthorityDescriptor->item(0)->getAttribute("protocolSupportEnumeration");
+
         for($i=0; $i<$AttributeService->length; $i++) {
-            if(strcmp($SAML2binding, $AttributeService->item($i)->getAttribute("Binding")) !== 0) {
-                $tmpResult--;
+            if(strcmp($AttributeService->item($i)->getAttribute("Binding"), $SAML2binding) === 0) {
+                if(!preg_match("/$SAML2protocol/", $protocols)) {
+                    array_push($messages, "SAML 2.0 binding requires SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration].");
+                }
             }
         }
-        if($tmpResult < 1) {
-                array_push($messages, "SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration] requires SAML 2.0 binding.");
+
+        if(preg_match("/$SAML2protocol/", $protocols)) {
+            $tmpResult = $AttributeService->length;
+            for($i=0; $i<$AttributeService->length; $i++) {
+                if(strcmp($SAML2binding, $AttributeService->item($i)->getAttribute("Binding")) !== 0) {
+                    $tmpResult--;
+                }
+            }
+            if($tmpResult < 1) {
+                    array_push($messages, "SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration] requires SAML 2.0 binding.");
+            }
         }
-    }
     }
 
     list($returncode, $message) = generateResult($messages);
