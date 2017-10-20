@@ -513,6 +513,8 @@ function checkAAD($metadata) {
 
     $messages = array();
 
+    $AttributeAuthorityDescriptor = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor");
+    if($AttributeAuthorityDescriptor->length > 0) {
     $AttributeService = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:AttributeService");
     for($i=0; $i<$AttributeService->length; $i++) {
         if(strcmp($AttributeService->item($i)->getAttribute("Binding"), $SAML2binding) === 0) {
@@ -537,6 +539,7 @@ function checkAAD($metadata) {
         if($tmpResult < 1) {
                 array_push($messages, "SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration] requires SAML 2.0 binding.");
         }
+    }
     }
 
     list($returncode, $message) = generateResult($messages);
