@@ -11,6 +11,7 @@ if(preg_match("/cs|sk/", $_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
 <head>
     <title>SAML-validator</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="Author" content="Jan Oppolzer; jan@oppolzer.cz">
     <link rel="stylesheet" type="text/css" href="css/normalize.css">
     <link rel="stylesheet" type="text/css" href="css/style.css">
