@@ -402,27 +402,26 @@ function checkRepublishRequest($metadata) {
     $xpath = new DOMXpath($doc);
     $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
     $xpath->registerNameSpace("eduidmd", "http://eduid.cz/schema/metadata/1.0");
-    $republishRequest = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest");
-    $republishTarget  = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest/eduidmd:RepublishTarget");
+    $republishRequestIDP = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/eduidmd:RepublishRequest");
+    $republishRequestSP  = $xpath->query("/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/eduidmd:RepublishRequest");
+    $republishRequest    = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest");
+    $republishTarget     = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest/eduidmd:RepublishTarget");
 
-    if($republishRequest->length > 0) {
+    $messages = array();
+
+    if(($republishRequestSP->length > 0) or ($republishRequestIDP->length > 0)) {
+        array_push($messages, "RepublishRequest placed incorrectly.");
+    } elseif($republishRequest->length > 0) {
         if($republishTarget->length > 0) {
-            if(strcmp($GLOBALS['REPUBLISH_TARGET'], $republishTarget->item(0)->nodeValue) === 0) {
-                $returncode = 0;
-                $message    = "";
-            } else {
-                $returncode = 2;
-                $message    = "RepublishRequest->RepublishTarget misconfigured.";
+            if(strcmp($GLOBALS['REPUBLISH_TARGET'], $republishTarget->item(0)->nodeValue) !== 0) {
+                array_push($messages, "RepublishRequest->RepublishTarget misconfigured.");
             }
         } else {
-            $returncode = 2;
-            $message    = "RepublishRequest->RepublishTarget missing.";
+            array_push($messages, "RepublishRequest->RepublishTarget missing.");
         }
-    } else {
-        $returncode = 0;
-        $message    = "";
     }
 
+    list($returncode, $message) = generateResult($messages);
     return array($returncode, $message);
 }
 
