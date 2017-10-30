@@ -384,6 +384,8 @@ function contactPersonTechnicalCheck($metadata) {
             }
             if(empty($mail->item(0)->nodeValue)) {
                 array_push($messages, "ContactPerson/technical->EmailAddress missing.");
+            } elseif(!preg_match("/^mailto\:/", $mail->item(0)->nodeValue)) {
+                array_push($messages, "ContactPerson/technical->EmailAddress doesn't contain \"mailto:\" schema.");
             }
         }
     }
