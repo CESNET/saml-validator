@@ -253,32 +253,24 @@ function scopeValueCheck($metadata) {
     $entityID = $entityDescriptor->item(0)->getAttribute("entityID");
     $pattern = '/https:\/\/([a-z0-9_\-\.]+)\/.*/i';
     $replacement = '$1';
-    $hostname = preg_replace ($pattern, $replacement, $entityID);
+    $hostname = preg_replace($pattern, $replacement, $entityID);
 
-    $scopeValue = array ();
+    $scopeValue = array();
     if($scopes->length > 0) {
         foreach($scopes as $s) {
             array_push($scopeValue, $s->nodeValue);
         }
     }
 
-    $scopeResult = -1;
+    $messages = array();
     foreach($scopeValue as $scope) {
-        if(preg_match("/$scope/", $hostname)) {
-            $regResult = 0;
-        } else {
-            $regResult = 2;
+        if(preg_match("/$scope/", $hostname) !== 1) {
+            array_push($messages, "Scope value must be a substring of the entityID!");
         }
-        $scopeResult = max($scopeResult, $regResult);
     }
 
-    $scopeMessage = array(
-        -1 => 'Something went wrong with scope value check.',
-         0 => '',
-         2 => 'Scope value must be a substring of the entityID!',
-    );
-
-    return array($scopeResult, $scopeMessage[$scopeResult]);
+    list($returncode, $message) = generateResult($messages);
+    return array($returncode, $message);
 }
 
 /* validation function: //mdui:UIInfo
