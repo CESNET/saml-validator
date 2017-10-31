@@ -219,24 +219,15 @@ function scopeRegexpCheck($metadata) {
         }
     }
 
-    $regexpResult = -1;
+    $messages = array();
     foreach($regexpValue as $regexp) {
-        if(strcmp($regexp, "false") === 0) {
-            $returncode = 0;
-        } else {
-            $returncode = 2;
+        if(strcmp($regexp, "false") !== 0) {
+            array_push($messages, "Scope regexp must be \"false\".");
         }
-
-        $regexpResult = max($regexpResult, $returncode);
     }
 
-    $regexpMessage = array(
-        -1 => 'Something went wrong with scope regexp check.',
-         0 => '',
-         2 => 'Scope regexp must be "false"!',
-    );
-
-    return array($regexpResult, $regexpMessage[$regexpResult]);
+    list($returncode, $message) = generateResult($messages);
+    return array($returncode, $message);
 }
 
 /* validation function: //shibmd:Scope === //EntityDescriptor[@entityID] substring
