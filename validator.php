@@ -597,8 +597,7 @@ if(!empty($_GET["d"])) {
         if(strcmp($delete, "1") === 0) {
             $DIR = rtrim($TMP_DIRECTORY, "/");
             $file = preg_split("/$DIR\//", $filename);
-            echo $file = $TMP_DIRECTORY . $file[1];
-            exec("cp $file $file.bak");
+            $file = $TMP_DIRECTORY . $file[1];
             exec("rm -f $file");
         } else {
             echo "Command not understood.";
