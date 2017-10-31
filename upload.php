@@ -61,7 +61,8 @@ function uploadFile($metadata) {
                            . pathinfo($_SERVER["REQUEST_URI"], PATHINFO_DIRNAME)
                            . "/"
                            . $GLOBALS["UPLOAD_DIR"]
-                           . $destinationFile;
+                           . $destinationFile
+                           . "&d=1";
                 }
             } else {
                 throw new Exception("Only XML documents allowed.");
@@ -92,10 +93,6 @@ try {
 } catch(Exception $e) {
     echo "Caught exception: ", $e->getMessage(), "\n";
 }
-
-# FIXME:
-# uploaded files are left within $UPLOAD_DIR even after SAML validations
-# add "deleteAfterCheck" variable to validator.php?
 
 ?>
 

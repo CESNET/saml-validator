@@ -587,6 +587,27 @@ if($validations["validMetadata"][0] === 0) {
     $validations["checkHTTPS"] = checkHTTPS($metadata);
 }
 
+/* delete downloaded metadata from $TMP_DIRECTORY
+ */
+if(!empty($_GET["d"])) {
+    $delete     = $_GET["d"];
+    $filename   = $_GET["filename"];
+
+    if(filter_var($filename, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
+        if(strcmp($delete, "1") === 0) {
+            $DIR = rtrim($TMP_DIRECTORY, "/");
+            $file = preg_split("/$DIR\//", $filename);
+            echo $file = $TMP_DIRECTORY . $file[1];
+            exec("cp $file $file.bak");
+            exec("rm -f $file");
+        } else {
+            echo "Command not understood.";
+        }
+    } else {
+        echo "No proper URL address specified.";
+    }
+}
+
 /* get result and produce XML
  */
 list($returncode, $message) = filterResult($validations);
