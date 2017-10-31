@@ -251,7 +251,7 @@ function scopeValueCheck($metadata) {
     $scopes = $xpath->query("//shibmd:Scope[@regexp]");
 
     $entityID = $entityDescriptor->item(0)->getAttribute("entityID");
-    $pattern = '/https:\/\/([a-z0-9_\-\.]*)\/.*/i';
+    $pattern = '/https:\/\/([a-z0-9_\-\.]+)\/.*/i';
     $replacement = '$1';
     $hostname = preg_replace ($pattern, $replacement, $entityID);
 
