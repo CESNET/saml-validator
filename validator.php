@@ -134,14 +134,19 @@ function certificateCheck($metadata) {
     $messages = array();
 
     if($certificates->length > 0) {
+        $certificate_number = 1;
         foreach($certificates as $cert) {
             $X509Certificate = "-----BEGIN CERTIFICATE-----\n" . trim ($cert->nodeValue) . "\n-----END CERTIFICATE-----";
             $cert_info = openssl_x509_parse($X509Certificate, true);
-            $cert_validTo = date("Y-m-d", $cert_info["validTo_time_t"]);
-            $cert_validFor = floor((strtotime($cert_validTo)-time ())/(60*60*24));
-            $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
-
-            array_push($certsInfo, array($cert_validTo, $cert_validFor, $pub_key["bits"]));
+            if(is_array($cert_info)) {
+                $cert_validTo = date("Y-m-d", $cert_info["validTo_time_t"]);
+                $cert_validFor = floor((strtotime($cert_validTo)-time ())/(60*60*24));
+                $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
+                array_push($certsInfo, array($cert_validTo, $cert_validFor, $pub_key["bits"]));
+            } else {
+                array_push($messages, "The certificate #$certificate_number is invalid.");
+            }
+            $certificate_number++;
         }
     } else {
         array_push($messages, "No certificate found.");
