@@ -293,20 +293,20 @@ function uiinfoCheck($metadata) {
 
     $messages = array();
     if($UIInfoDisplayNameCS->length !== 1)
-       array_push($messages, "UIInfo->DisplayName/cs missing.");
+       array_push($messages, "UIInfo->DisplayName/cs (".str_replace('md:', '', $SSODescriptor).") missing.");
     if($UIInfoDisplayNameEN->length !== 1)
-       array_push($messages, "UIInfo->DisplayName/en missing.");
+       array_push($messages, "UIInfo->DisplayName/en (".str_replace('md:', '', $SSODescriptor).") missing.");
     if($UIInfoDescriptionCS->length !== 1)
-       array_push($messages, "UIInfo->Description/cs missing.");
+       array_push($messages, "UIInfo->Description/cs (".str_replace('md:', '', $SSODescriptor).") missing.");
     if($UIInfoDescriptionEN->length !== 1)
-       array_push($messages, "UIInfo->Description/en missing.");
+       array_push($messages, "UIInfo->Description/en (".str_replace('md:', '', $SSODescriptor).") missing.");
     if($UIInfoInformationURLCS->length !== 1)
-       array_push($messages, "UIInfo->InformationURL/cs missing.");
+       array_push($messages, "UIInfo->InformationURL/cs (".str_replace('md:', '', $SSODescriptor).") missing.");
     if($UIInfoInformationURLEN->length !== 1)
-       array_push($messages, "UIInfo->InformationURL/en missing.");
+       array_push($messages, "UIInfo->InformationURL/en (".str_replace('md:', '', $SSODescriptor).") missing.");
     if(isIDP($metadata)) {
        if($UIInfoLogo->length < 1)
-           array_push($messages, "UIInfo->Logo missing.");
+           array_push($messages, "UIInfo->Logo (".str_replace('md:', '', $SSODescriptor).") missing.");
     }
 
     list($returncode, $message) = generateResult($messages);
