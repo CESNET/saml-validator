@@ -279,34 +279,34 @@ function uiinfoCheck($metadata) {
     $xpath->registerNameSpace("mdui", "urn:oasis:names:tc:SAML:metadata:ui");
 
     if(isIDP($metadata)) {
-        $SSODescriptor = 'md:IDPSSODescriptor';
+        $SSODescriptor = 'IDPSSODescriptor';
     } else {
-        $SSODescriptor = 'md:SPSSODescriptor';
+        $SSODescriptor = 'SPSSODescriptor';
     }
-    $UIInfoDisplayNameCS        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
-    $UIInfoDisplayNameEN        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
-    $UIInfoDescriptionCS        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
-    $UIInfoDescriptionEN        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="en"]');
-    $UIInfoInformationURLCS     = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
-    $UIInfoInformationURLEN     = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
-    $UIInfoLogo                 = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Logo');
+    $UIInfoDisplayNameCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
+    $UIInfoDisplayNameEN        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
+    $UIInfoDescriptionCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
+    $UIInfoDescriptionEN        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="en"]');
+    $UIInfoInformationURLCS     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
+    $UIInfoInformationURLEN     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
+    $UIInfoLogo                 = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Logo');
 
     $messages = array();
     if($UIInfoDisplayNameCS->length !== 1)
-       array_push($messages, "UIInfo->DisplayName/cs (".str_replace('md:', '', $SSODescriptor).") missing.");
+       array_push($messages, "UIInfo->DisplayName/cs ($SSODescriptor) missing.");
     if($UIInfoDisplayNameEN->length !== 1)
-       array_push($messages, "UIInfo->DisplayName/en (".str_replace('md:', '', $SSODescriptor).") missing.");
+       array_push($messages, "UIInfo->DisplayName/en ($SSODescriptor) missing.");
     if($UIInfoDescriptionCS->length !== 1)
-       array_push($messages, "UIInfo->Description/cs (".str_replace('md:', '', $SSODescriptor).") missing.");
+       array_push($messages, "UIInfo->Description/cs ($SSODescriptor) missing.");
     if($UIInfoDescriptionEN->length !== 1)
-       array_push($messages, "UIInfo->Description/en (".str_replace('md:', '', $SSODescriptor).") missing.");
+       array_push($messages, "UIInfo->Description/en ($SSODescriptor) missing.");
     if($UIInfoInformationURLCS->length !== 1)
-       array_push($messages, "UIInfo->InformationURL/cs (".str_replace('md:', '', $SSODescriptor).") missing.");
+       array_push($messages, "UIInfo->InformationURL/cs ($SSODescriptor) missing.");
     if($UIInfoInformationURLEN->length !== 1)
-       array_push($messages, "UIInfo->InformationURL/en (".str_replace('md:', '', $SSODescriptor).") missing.");
+       array_push($messages, "UIInfo->InformationURL/en ($SSODescriptor) missing.");
     if(isIDP($metadata)) {
        if($UIInfoLogo->length < 1)
-           array_push($messages, "UIInfo->Logo (".str_replace('md:', '', $SSODescriptor).") missing.");
+           array_push($messages, "UIInfo->Logo ($SSODescriptor) missing.");
     }
 
     list($returncode, $message) = generateResult($messages);
