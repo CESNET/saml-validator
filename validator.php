@@ -278,13 +278,18 @@ function uiinfoCheck($metadata) {
     $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
     $xpath->registerNameSpace("mdui", "urn:oasis:names:tc:SAML:metadata:ui");
 
-    $UIInfoDisplayNameCS        = $xpath->query('//mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
-    $UIInfoDisplayNameEN        = $xpath->query('//mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
-    $UIInfoDescriptionCS        = $xpath->query('//mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
-    $UIInfoDescriptionEN        = $xpath->query('//mdui:UIInfo/mdui:Description[@xml:lang="en"]');
-    $UIInfoInformationURLCS     = $xpath->query('//mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
-    $UIInfoInformationURLEN     = $xpath->query('//mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
-    $UIInfoLogo                 = $xpath->query('//mdui:UIInfo/mdui:Logo');
+    if(isIDP($metadata)) {
+        $SSODescriptor = 'md:IDPSSODescriptor';
+    } else {
+        $SSODescriptor = 'md:SPSSODescriptor';
+    }
+    $UIInfoDisplayNameCS        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
+    $UIInfoDisplayNameEN        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
+    $UIInfoDescriptionCS        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
+    $UIInfoDescriptionEN        = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="en"]');
+    $UIInfoInformationURLCS     = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
+    $UIInfoInformationURLEN     = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
+    $UIInfoLogo                 = $xpath->query('/md:EntityDescriptor/'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Logo');
 
     $messages = array();
     if($UIInfoDisplayNameCS->length !== 1)
