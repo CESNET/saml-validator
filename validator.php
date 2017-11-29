@@ -2,9 +2,6 @@
 
 header ("Content-Type: text/xml");
 
-error_reporting ( E_ALL );
-ini_set ('display_errors', 1);
-
 /*
  * Download and validate metadata from JAGGER [1].
  *
