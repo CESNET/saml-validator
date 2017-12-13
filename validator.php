@@ -302,11 +302,21 @@ function uiinfoCheck($metadata) {
     if($UIInfoInformationURLEN->length !== 1)
        array_push($messages, "UIInfo->InformationURL/en ($SSODescriptor) missing.");
     if(isIDP($metadata)) {
-       if($UIInfoLogo->length < 1)
+       if($UIInfoLogo->length < 1) {
            array_push($messages, "UIInfo->Logo ($SSODescriptor) missing.");
-       foreach($UIInfoLogo as $logo) {
-           if(!file_get_contents($logo->nodeValue))
-               array_push($messages, "Logo $logo->nodeValue does not exist.");
+       } else {
+           foreach($UIInfoLogo as $logo) {
+               if(!file_get_contents($logo->nodeValue)) {
+                   array_push($messages, "Logo $logo->nodeValue does not exist.");
+               } else {
+                   if(!exif_imagetype($logo->nodeValue)) {
+                       $doc = new DOMDocument();
+                       $doc->load($logo->nodeValue);
+                       if(strcmp($doc->documentElement->nodeName, 'svg') !== 0)
+                           array_push($messages, "Logo $logo->nodeValue is not an image.");
+                   }
+               }
+           }
        }
     }
 
