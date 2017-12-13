@@ -304,6 +304,10 @@ function uiinfoCheck($metadata) {
     if(isIDP($metadata)) {
        if($UIInfoLogo->length < 1)
            array_push($messages, "UIInfo->Logo ($SSODescriptor) missing.");
+       foreach($UIInfoLogo as $logo) {
+           if(!file_get_contents($logo->nodeValue))
+               array_push($messages, "Logo $logo->nodeValue does not exist.");
+       }
     }
 
     list($returncode, $message) = generateResult($messages);
