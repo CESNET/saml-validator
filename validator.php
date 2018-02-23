@@ -306,7 +306,10 @@ function uiinfoCheck($metadata) {
            array_push($messages, "UIInfo->Logo ($SSODescriptor) missing.");
        } else {
            foreach($UIInfoLogo as $logo) {
-               if(!file_get_contents($logo->nodeValue)) {
+               $file = file_get_contents($logo->nodeValue);
+               if($http_response_header === NULL) {
+                   array_push($messages, "Logo $logo->nodeValue could not be downloaded (SSL error?).");
+               } elseif(!$file) {
                    array_push($messages, "Logo $logo->nodeValue does not exist.");
                } else {
                    if(!exif_imagetype($logo->nodeValue)) {
