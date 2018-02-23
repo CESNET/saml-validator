@@ -2,6 +2,8 @@
 
 if(preg_match("/cs|sk/", $_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
     $locale = "czech";
+} else {
+    $locale = null;
 }
 
 ?>
