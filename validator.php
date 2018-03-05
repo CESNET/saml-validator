@@ -308,7 +308,7 @@ function uiinfoCheck($metadata) {
            foreach($UIInfoLogo as $logo) {
                $file = file_get_contents($logo->nodeValue);
                if($http_response_header === NULL) {
-                   array_push($messages, "Logo $logo->nodeValue could not be downloaded (SSL error?).");
+                   array_push($messages, "Logo $logo->nodeValue could not be downloaded (SSL error? Check www.ssllabs.com!).");
                } elseif(!$file) {
                    array_push($messages, "Logo $logo->nodeValue does not exist.");
                } else {
