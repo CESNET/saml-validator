@@ -287,6 +287,7 @@ function uiinfoCheck($metadata) {
     $UIInfoInformationURLCS     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
     $UIInfoInformationURLEN     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
     $UIInfoLogo                 = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Logo');
+    $UIInfoPrivacyStatementURL  = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL');
 
     $messages = array();
     if($UIInfoDisplayNameCS->length !== 1)
@@ -321,6 +322,17 @@ function uiinfoCheck($metadata) {
                }
            }
        }
+    }
+    if($UIInfoPrivacyStatementURL->length > 0) {
+        //print_r($UIInfoPrivacyStatementURL);
+        foreach($UIInfoPrivacyStatementURL as $url) {
+            //print_r($url->nodeValue);
+            @$file = file_get_contents($url->nodeValue);
+            if(@$http_response_header === NULL)
+                array_push($messages, "PrivacyStatementURL \"$url->nodeValue\" could not be accessed.");
+            elseif(!$file)
+                array_push($messages, "PrivacyStatementURL \"$url->nodeValue\" does not exist.");
+        }
     }
 
     list($returncode, $message) = generateResult($messages);
