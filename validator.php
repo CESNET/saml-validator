@@ -455,12 +455,6 @@ function checkHTTPS($metadata) {
         $URL["Logo".$i] = $Logo->item($i)->nodeValue;
     }
 
-    # //mdui:UIInfo/mdui:PrivacyStatementURL
-    $PrivacyStatementURL = $xpath->query('//mdui:UIInfo/mdui:PrivacyStatementURL');
-    for($i=0; $i<$PrivacyStatementURL->length; $i++) {
-        $URL["PrivacyStatementURL".$i] = $PrivacyStatementURL->item($i)->nodeValue;
-    }
-
     # //md:ArtifactResolutionService
     $ArtifactResolutionService = $xpath->query("/md:EntityDescriptor//md:ArtifactResolutionService");
     for($i=0; $i<$ArtifactResolutionService->length; $i++) {
