@@ -324,9 +324,7 @@ function uiinfoCheck($metadata) {
        }
     }
     if($UIInfoPrivacyStatementURL->length > 0) {
-        //print_r($UIInfoPrivacyStatementURL);
         foreach($UIInfoPrivacyStatementURL as $url) {
-            //print_r($url->nodeValue);
             @$file = file_get_contents($url->nodeValue);
             if(@$http_response_header === NULL)
                 array_push($messages, "PrivacyStatementURL \"$url->nodeValue\" could not be accessed.");
