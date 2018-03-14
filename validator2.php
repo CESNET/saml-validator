@@ -523,17 +523,29 @@ function checkOrganization($xpath) {
 /**
  * checkContactPerson() validates that at least one <ContactPerson> contains contactType='technical' attribute.
  */
-// FIXME: Check "mailto:" on all <ContactPerson> elements!
 function checkContactPerson($xpath) {
     $result = array();
 
-    $contactPerson = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@contactType='technical']");
+    $contactPerson          = $xpath->query("/md:EntityDescriptor/md:ContactPerson");
+    $contactPersonTechnical = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@contactType='technical']");
 
-    if($contactPerson->length < 1)
+    if($contactPerson->length > 0) {
+        $i = 1;
+        foreach($contactPerson as $c) {
+            $email = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "EmailAddress");
+
+            if(!preg_match("/^mailto\:/", $email->item(0)->nodeValue))
+                array_push($result, "ContactPerson (" . $i . ")->EmailAddress doesn't contain \"mailto:\" scheme.");
+
+            $i++;
+        }
+    }
+
+    if($contactPersonTechnical->length < 1)
         array_push($result, "ContactPerson/technical undefined.");
     else {
         $i = 1;
-        foreach($contactPerson as $c) {
+        foreach($contactPersonTechnical as $c) {
             $givenName = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "GivenName");
             $sn        = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "SurName");
             $email     = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "EmailAddress");
@@ -544,11 +556,8 @@ function checkContactPerson($xpath) {
             if(empty($sn->item(0)->nodeValue))
                 array_push($result, "ContactPerson (" . $i . ")/technical->SurName missing.");
 
-            if(empty($email->item(0)->nodeValue)) {
+            if(empty($email->item(0)->nodeValue))
                 array_push($result, "ContactPerson (" . $i . ")/technical->EmailAddress missing.");
-            } elseif(!preg_match("/^mailto\:/", $email->item(0)->nodeValue)) {
-                array_push($result, "ContactPerson (" . $i . ")/technical->EmailAddress doesn't contain \"mailto:\" schema.");
-            }
 
             $i++;
         }
