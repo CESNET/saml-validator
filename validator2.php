@@ -257,6 +257,7 @@ function checkUIInfo($xpath) {
     } else {
         $SSODescriptor = 'SPSSODescriptor';
     }
+
     $UIInfoDisplayNameCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
     $UIInfoDisplayNameEN        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
     $UIInfoDescriptionCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
@@ -312,7 +313,6 @@ function checkUIInfo($xpath) {
     return $result;
 }
 
-// checkCertificate
 /**
  * checkCertificate() validates certificate's public key size and validity time
  */
@@ -373,10 +373,6 @@ function checkCertificate($xpath) {
     return $result;
 }
 
-//
-// Check if the entity is an IdP?
-//
-// IdP only: checkScope
 /**
  * checkScope() validates the <Scope> of an IdP
  */
@@ -396,7 +392,6 @@ function checkScope($xpath) {
     return $result;
 }
 
-// IdP only: checkScopeRegexp
 /**
  * checkScopeRegexp() validates 'regexp="false"' for <Scope> element.
  */
@@ -421,7 +416,6 @@ function checkScopeRegexp($xpath) {
     return $result;
 }
 
-// IdP only: checkScopeValue
 /**
  * checkScopeValue() validates that <Scope> value is a substring of //EntityDescriptor[@entityID]
  */
@@ -452,7 +446,6 @@ function checkScopeValue($xpath) {
     return $result;
 }
 
-// IdP only: checkAttributeAuthorityDescriptor
 /**
  * checkAttributeAuthorityDescriptor() validates AttributeAuthorityDescriptor[@protocolSupportEnumeration]
  */
