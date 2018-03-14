@@ -625,7 +625,7 @@ try {
     list($returncode, $message) = generateResult($results);
     writeXML($returncode, $message);
 
-    //deleteMetadata($file);
+    deleteMetadata($file);
 } catch(Throwable $t) {
     writeXML(2, "Caught Exception: " . $t->getMessage());
     exit(2);
