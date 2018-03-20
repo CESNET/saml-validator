@@ -275,10 +275,28 @@ function checkUIInfo($xpath) {
        array_push($result, "$SSODescriptor" . "->UIInfo->Description/cs missing.");
     if($UIInfoDescriptionEN->length !== 1)
        array_push($result, "$SSODescriptor" . "->UIInfo->Description/en missing.");
-    if($UIInfoInformationURLCS->length !== 1)
+    if($UIInfoInformationURLCS->length !== 1) {
        array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs missing.");
-    if($UIInfoInformationURLEN->length !== 1)
-       array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en missing.");
+    } else {
+        foreach($UIInfoInformationURLCS as $url) {
+            @$file = file_get_contents($url->nodeValue);
+            if($http_response_header === NULL)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs could not be read.");
+            elseif(!$file)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs does not exist.");
+        }
+    }
+    if($UIInfoInformationURLEN->length !== 1) {
+        array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en missing.");
+    } else {
+        foreach($UIInfoInformationURLEN as $url) {
+            @$file = file_get_contents($url->nodeValue);
+            if($http_response_header === NULL)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en could not be read.");
+            elseif(!$file)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en does not exist.");
+        }
+    }
     if(isIDP($xpath)) {
        if($UIInfoLogo->length < 1) {
            array_push($result, "$SSODescriptor" . "->UIInfo->Logo missing.");
