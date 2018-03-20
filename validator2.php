@@ -529,10 +529,28 @@ function checkOrganization($xpath) {
             array_push($result, "Organization->OrganizationDisplayName/cs missing.");
         if($organizationDisplayNameEN->length === 0)
             array_push($result, "Organization->OrganizationDisplayName/en missing");
-        if($organizationURLCS->length === 0)
+        if($organizationURLCS->length === 0) {
             array_push($result, "Organization->OrganizationURL/cs missing.");
-        if($organizationURLEN->length === 0)
+        } else {
+            foreach($organizationURLCS as $url) {
+                @$file = file_get_contents($url->nodeValue);
+                if($http_response_header === NULL)
+                    array_push($result, "Organization->OrganizationURL/cs could not be read.");
+                elseif(!$file)
+                    array_push($result, "Organization->OrganizationURL/cs does not exist.");
+            }
+        }
+        if($organizationURLEN->length === 0) {
             array_push($result, "Organization->OrganizationURL/en missing.");
+        } else {
+            foreach($organizationURLEN as $url) {
+                @$file = file_get_contents($url->nodeValue);
+                if($http_response_header === NULL)
+                    array_push($result, "Organization->OrganizationURL/en could not be read.");
+                elseif(!$file)
+                    array_push($result, "Organization->OrganizationURL/en does not exist.");
+            }
+        }
     }
 
     return $result;
