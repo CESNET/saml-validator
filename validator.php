@@ -1,459 +1,163 @@
 <?php
 
-header ("Content-Type: text/xml");
-
-/*
- * Download and validate metadata from JAGGER [1].
+/**
+ * SAML-validator [1] is a utility to validate SAML metadata for SAML Identity
+ * Federation and cooperates nicely with a web-based metadata management system
+ * Jagger [2].
  *
- * Metadata URL has to be passed via HTTP GET variable called `filename'
- * defined in Federation Validators settings (JAGGER). Then, metadata is saved
- * as a XML file `ENCODED_ENTITYID'.xml (ENCODED_ENTITYID is generated
- * automatically by JAGGER) in `tmp/' subdirectory which must exist and be
- * writable by the user running web server. After validation process is
- * finished, the temporary XML file with metadata is deleted.
+ * SAML-validator is written by Jan Oppolzer [3] from CESNET [4] and all the
+ * validation checks ensure that metadata is compatible with the Czech
+ * academic identity federation eduID.cz [5] as well as testing federation
+ * czTestFed [6].
  *
- * SAML-validators is written by Jan Oppolzer [2] from CESNET [3] and can be
- * obtained from GitHub repository [4].
- *
- * [1] http://jagger.heanet.ie/
- * [2] jan.oppolzer@cesnet.cz
- * [3] https://www.cesnet.cz/
- * [4] https://github.com/JanOppolzer/saml-validator/
+ * [1] https://github.com/JanOppolzer/saml-validator
+ * [2] https://jagger.heanet.ie
+ * [3] jan@oppolzer.cz
+ * [4] https://www.cesnet.cz
+ * [5] https://www.eduid.cz
+ * [6] https://www.eduid.cz/cs/cztestfed/index
  *
  */
 
-/* variable definitions
+/**
+ * Set Content-Type to text/xml.
  */
-$KEY_SIZE               = 2048; # bits
-$CERTIFICATE_VALIDITY   = 30;   # days
-$REPUBLISH_TARGET       = "http://edugain.org/";
-$TMP_DIRECTORY          = "tmp/";
+header("Content-Type: text/xml");
+#echo "<pre>";
 
-/* writeXML() function to produce XML output
+/**
+ * Variables
+ */
+$TMP_DIRECTORY      = "tmp2/";
+$CRT_KEY_SIZE       = 2048;                     // certificate's public key size in bits
+$CRT_VALIDITY       = 30;                       // certificate's validity in days
+$REPUBLISH_TARGET   = "http://edugain.org/";
+
+/**
+ * writeXML() function composes a resulting XML document.
  */
 function writeXML($returncode, $message = null) {
     $xml = new XMLWriter();
+
     $xml->openURI("php://output");
-    $xml->startDocument("1.0", "utf-8");
     $xml->setIndent(true);
-    $xml->setIndentString("    ");
+    $xml->setIndentString("  ");
+
+    $xml->startDocument("1.0", "utf-8");
     $xml->startElement("validation");
     $xml->writeElement("returncode", $returncode);
     $xml->writeElement("message", $message);
     $xml->endElement();
     $xml->endDocument();
+
     $xml->flush();
 }
 
-/* filterResult() returns $returncode and $message variables
+/**
+ * checkTempDir() checks $TMP_DIRECTORY for existance and writtability.
  */
-function filterResult($validations) {
-    $returncode = -1;
-    $message    = null;
+function checkTempDir($dir) {
+    if(!file_exists($dir) || !is_dir($dir))
+        throw new Exception(dirname(__FILE__) . "/" . $dir . " directory doesn't exists.");
 
-    foreach($validations as $validation) {
-        $returncode = max($returncode, $validation[0]);
-        $message .= $validation[1];
-    }
-
-    return array($returncode, $message);
+    if(!is_writable($dir))
+        throw new Exception(dirname(__FILE__) . "/" . $dir . " directory isn't writtable.");
 }
 
-/* isIDP function returns true in case $metadata is IdP
+/**
+ * getMetadataURL() checks for proper URL address in $_GET["filename"].
  */
-function isIDP ($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
-    $result = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor");
+function getMetadataURL() {
+    if(empty($_GET["filename"]))
+        throw new Exception("No metadata URL defined using HTTP GET variable `filename`.");
 
-    if ($result->length > 0) {
-        return true;
-    }
+    $filename = $_GET["filename"];
+    if(!filter_var($filename, FILTER_VALIDATE_URL))
+        throw new Exception("Invalid metadata URL supplied in HTTP GET variable `filename`.");
+    elseif(!preg_match("/^https\:\/\//", $filename))
+        throw new Exception("Metadata URL supplied in HTTP GET variable `filename` must be HTTPS.");
+    else
+        return $filename;
 }
 
-/* generates returncode and a warning/error message on the basis of $messages
+/**
+ * getMetadataFile() fetches metadata.
  */
-function generateResult($messages) {
-    $message = "";
-    if(count($messages) > 0) {
-        $returncode = 2;
-        foreach($messages as $m) {
-            $message .= $m . " ";
-        }
-    } else {
-        $returncode = 0;
-    }
+function getMetadataFile($url) {
+    $metadata = file_get_contents($url);
 
-    return array($returncode, $message);
+    if(empty($metadata))
+        throw new Exception("Metadata file has no content.");
+
+    $file = $GLOBALS['TMP_DIRECTORY'] . time() . "-" . uniqid() . "-" . random_int(1000, 9999) . ".xml";
+    file_put_contents($file, $metadata);
+
+    return $file;
 }
 
-/* returns a string containing XML errors produced by libxml
+/**
+ * libxml_display_errors() returns libXML errors.
  */
+// FIXME
 function libxml_display_errors() {
     $errors = libxml_get_errors();
-    $return = null;
-    foreach($errors as $error) {
-        $return .= trim($error->message) . " ";
-    }
-    return $return;
+    $result = null;
+
+    foreach($errors as $e)
+        $result .= trim($e->message) . " ";
+
+    return $result;
+
     libxml_clear_errors();
 }
 
-/* validation function: validates the document agains XSD
+/**
+ * createDOM() creates a DOM object.
  */
-function validateSAML($metadata) {
+function createDOM($xml) {
     libxml_use_internal_errors(true);
-    $xml = new DOMDocument();
-    @$xml->load($metadata);
-    if(!@$xml->schemaValidate('xsd/saml-schema-metadata-2.0.xsd') or
-       !@$xml->schemaValidate('xsd/sstc-saml-metadata-ui-v1.0.xsd')) {
-        $returncode = 2;
-        $message    = libxml_display_errors();
-    } else {
-        $returncode = 0;
-        $message    = "";
-    }
 
-    return array($returncode, $message);
+    $dom = new DOMDocument();
+    $dom->load($xml);
+
+    if(!$dom->schemaValidate("xsd/saml-schema-metadata-2.0.xsd") or
+       !$dom->schemaValidate("xsd/sstc-saml-metadata-ui-v1.0.xsd"))
+        throw new Exception(libxml_display_errors());
+
+    return $dom;
 }
 
-/* validation function (certificate's public key size and validity)
+/**
+ * createXPath() creates an XPath object.
  */
-function certificateCheck($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
+function createXPath($dom) {
+    $xpath = new DOMXpath($dom);
+
+    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
     $xpath->registerNameSpace("ds", "http://www.w3.org/2000/09/xmldsig#");
-    $certificates = $xpath->query("//ds:X509Certificate");
-    $certsInfo = array();
-    $messages = array();
-
-    if($certificates->length > 0) {
-        $certificate_number = 1;
-        foreach($certificates as $cert) {
-            $X509Certificate = "-----BEGIN CERTIFICATE-----\n" . trim ($cert->nodeValue) . "\n-----END CERTIFICATE-----";
-            $cert_info = openssl_x509_parse($X509Certificate, true);
-            if(is_array($cert_info)) {
-                $cert_validTo = date("Y-m-d", $cert_info["validTo_time_t"]);
-                $cert_validFor = floor((strtotime($cert_validTo)-time ())/(60*60*24));
-                $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
-                array_push($certsInfo, array($cert_validTo, $cert_validFor, $pub_key["bits"]));
-            } else {
-                array_push($messages, "The certificate #$certificate_number is invalid.");
-            }
-            $certificate_number++;
-        }
-    } else {
-        array_push($messages, "No certificate found.");
-    }
-
-    $certsResults = array_fill(0, count($certsInfo), array_fill(0, 2, null));
-    for($i=0; $i<count($certsInfo); $i++) {
-        if($certsInfo[$i][2] < $GLOBALS["KEY_SIZE"]) {
-            $certsResults[$i][0] = "Public key size must be at least " . $GLOBALS["KEY_SIZE"] . " bits. Yours is only " . $certsInfo[$i][2] . ".";
-        }
-
-        if($certsInfo[$i][1] < $GLOBALS["CERTIFICATE_VALIDITY"]) {
-            $certsResults[$i][1] = "Certificate must be valid at least for " . $GLOBALS["CERTIFICATE_VALIDITY"] . " days. Yours is " . $certsInfo[$i][1] . ".";
-        }
-    }
-
-    for($i=0; $i<count($certsResults); $i++) {
-        if($i%2 === 0) {
-            continue;
-        }
-
-        if(($certsResults[$i][0] !== null) || ($certsResults[$i][1] !== null)) {
-            foreach($certsResults[$i] as $m) {
-                array_push($messages, $m);
-            }
-        }
-
-        if($certsResults[$i][0] !== null) {
-            foreach($certsResults[$i] as $m) {
-                array_push($messages, $m);
-            }
-        }
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: /md:EntityDescriptor/{md:IDPSSODescriptor,md:AttributeAuthorityDescriptor}/md:Extensions/shibmd:Scope
- */
-function scopeCheck($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
     $xpath->registerNameSpace("shibmd", "urn:mace:shibboleth:metadata:1.0");
-    $resultIDP = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/shibmd:Scope");
-    $resultAA  = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:Extensions/shibmd:Scope");
-
-    $messages = array();
-    if($resultIDP->length !== 1) {
-        array_push($messages, "Precisely 1 IDPSSODescriptor/Scope required.");
-    }
-    if($resultAA->length > 1) {
-        array_push($messages, "Either 0 or 1 AttributeAuthorityDescriptor/Scope allowed.");
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: //shibmd:Scope[@regexp=false]
- */
-function scopeRegexpCheck($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("shibmd", "urn:mace:shibboleth:metadata:1.0");
-    $scopes = $xpath->query("//shibmd:Scope[@regexp]");
-
-    $regexpValue = array();
-    if($scopes->length > 0) {
-        foreach($scopes as $s) {
-            array_push($regexpValue, $s->getAttribute("regexp"));
-        }
-    }
-
-    $messages = array();
-    foreach($regexpValue as $regexp) {
-        if(strcmp($regexp, "false") !== 0) {
-            array_push($messages, "Scope regexp must be \"false\".");
-        }
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: //shibmd:Scope === //EntityDescriptor[@entityID] substring
- */
-function scopeValueCheck($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
-    $xpath->registerNamespace("shibmd", "urn:mace:shibboleth:metadata:1.0");
-    $entityDescriptor = $xpath->query("/md:EntityDescriptor");
-    $scopes = $xpath->query("//shibmd:Scope[@regexp]");
-
-    $entityID = $entityDescriptor->item(0)->getAttribute("entityID");
-    $pattern = '/https:\/\/([a-z0-9_\-\.]+)\/.*/i';
-    $replacement = '$1';
-    $hostname = preg_replace($pattern, $replacement, $entityID);
-
-    $scopeValue = array();
-    if($scopes->length > 0) {
-        foreach($scopes as $s) {
-            array_push($scopeValue, $s->nodeValue);
-        }
-    }
-
-    $messages = array();
-    foreach($scopeValue as $scope) {
-        if(preg_match("/$scope/", $hostname) !== 1) {
-            array_push($messages, "Scope value must be a substring of the entityID!");
-        }
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: //mdui:UIInfo
- */
-function uiinfoCheck($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
     $xpath->registerNameSpace("mdui", "urn:oasis:names:tc:SAML:metadata:ui");
-
-    if(isIDP($metadata)) {
-        $SSODescriptor = 'IDPSSODescriptor';
-    } else {
-        $SSODescriptor = 'SPSSODescriptor';
-    }
-    $UIInfoDisplayNameCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
-    $UIInfoDisplayNameEN        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
-    $UIInfoDescriptionCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
-    $UIInfoDescriptionEN        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="en"]');
-    $UIInfoInformationURLCS     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
-    $UIInfoInformationURLEN     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
-    $UIInfoLogo                 = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Logo');
-    $UIInfoPrivacyStatementURL  = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL');
-
-    $messages = array();
-    if($UIInfoDisplayNameCS->length !== 1)
-       array_push($messages, "UIInfo->DisplayName/cs ($SSODescriptor) missing.");
-    if($UIInfoDisplayNameEN->length !== 1)
-       array_push($messages, "UIInfo->DisplayName/en ($SSODescriptor) missing.");
-    if($UIInfoDescriptionCS->length !== 1)
-       array_push($messages, "UIInfo->Description/cs ($SSODescriptor) missing.");
-    if($UIInfoDescriptionEN->length !== 1)
-       array_push($messages, "UIInfo->Description/en ($SSODescriptor) missing.");
-    if($UIInfoInformationURLCS->length !== 1)
-       array_push($messages, "UIInfo->InformationURL/cs ($SSODescriptor) missing.");
-    if($UIInfoInformationURLEN->length !== 1)
-       array_push($messages, "UIInfo->InformationURL/en ($SSODescriptor) missing.");
-    if(isIDP($metadata)) {
-       if($UIInfoLogo->length < 1) {
-           array_push($messages, "UIInfo->Logo ($SSODescriptor) missing.");
-       } else {
-           foreach($UIInfoLogo as $logo) {
-               $file = file_get_contents($logo->nodeValue);
-               if($http_response_header === NULL) {
-                   array_push($messages, "Logo $logo->nodeValue could not be downloaded (SSL error? Check www.ssllabs.com!).");
-               } elseif(!$file) {
-                   array_push($messages, "Logo $logo->nodeValue does not exist.");
-               } else {
-                   if(!exif_imagetype($logo->nodeValue)) {
-                       $doc = new DOMDocument();
-                       $doc->load($logo->nodeValue);
-                       if(strcmp($doc->documentElement->nodeName, 'svg') !== 0)
-                           array_push($messages, "Logo $logo->nodeValue is not an image.");
-                   }
-               }
-           }
-       }
-    }
-    if($UIInfoPrivacyStatementURL->length > 0) {
-        foreach($UIInfoPrivacyStatementURL as $url) {
-            @$file = file_get_contents($url->nodeValue);
-            if(@$http_response_header === NULL)
-                array_push($messages, "PrivacyStatementURL \"$url->nodeValue\" could not be accessed.");
-            elseif(!$file)
-                array_push($messages, "PrivacyStatementURL \"$url->nodeValue\" does not exist.");
-        }
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: //md:Organization
- */
-function organizationCheck($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
-    $organization = $xpath->query("/md:EntityDescriptor/md:Organization");
-
-    $messages = array();
-    if($organization->length == 0) {
-        array_push($messages, "Organization missing.");
-    } else {
-        $OrganizationNameCS        = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="cs"]');
-        $OrganizationNameEN        = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang="en"]');
-        $OrganizationDisplayNameCS = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="cs"]');
-        $OrganizationDisplayNameEN = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang="en"]');
-        $OrganizationURLCS         = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="cs"]');
-        $OrganizationURLEN         = $xpath->query('/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang="en"]');
-
-        if($OrganizationNameCS->length === 0)
-            array_push($messages, "Organization->OrganizationName/cs missing.");
-        if($OrganizationNameEN->length === 0)
-            array_push($messages, "Organization->OrganizationName/en missing.");
-        if($OrganizationDisplayNameCS->length === 0)
-            array_push($messages, "Organization->OrganizationDisplayName/cs missing.");
-        if($OrganizationDisplayNameEN->length === 0)
-            array_push($messages, "Organization->OrganizationDisplayName/en missing.");
-        if($OrganizationURLCS->length === 0)
-            array_push($messages, "Organization->OrganizationURL/cs missing.");
-        if($OrganizationURLEN->length === 0)
-            array_push($messages, "Organization->OrganizationURL/en missing.");
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: //md:ContactPerson[@contactType=technical]
- */
-function contactPersonTechnicalCheck($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
-    $contactPersons = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@contactType='technical']");
-
-    $messages = array();
-    if($contactPersons->length < 1) {
-        array_push($messages, "ContactPerson/technical undefined.");
-    } else {
-        foreach($contactPersons as $c) {
-            $givenName = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata","GivenName");
-            $sn        = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata","SurName");
-            $mail      = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata","EmailAddress");
-
-            if(empty($givenName->item(0)->nodeValue)) {
-                array_push($messages, "ContactPerson/technical->GivenName missing.");
-            }
-            if(empty($sn->item(0)->nodeValue)) {
-                array_push($messages, "ContactPerson/technical->SurName missing.");
-            }
-            if(empty($mail->item(0)->nodeValue)) {
-                array_push($messages, "ContactPerson/technical->EmailAddress missing.");
-            } elseif(!preg_match("/^mailto\:/", $mail->item(0)->nodeValue)) {
-                array_push($messages, "ContactPerson/technical->EmailAddress doesn't contain \"mailto:\" schema.");
-            }
-        }
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: checkRepublishRequest
- */
-function checkRepublishRequest($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
     $xpath->registerNameSpace("eduidmd", "http://eduid.cz/schema/metadata/1.0");
-    $republishRequestIDP = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/eduidmd:RepublishRequest");
-    $republishRequestSP  = $xpath->query("/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/eduidmd:RepublishRequest");
-    $republishRequest    = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest");
-    $republishTarget     = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest/eduidmd:RepublishTarget");
-
-    $messages = array();
-
-    if(($republishRequestSP->length > 0) or ($republishRequestIDP->length > 0)) {
-        array_push($messages, "RepublishRequest placed incorrectly.");
-    } elseif($republishRequest->length > 0) {
-        if($republishTarget->length > 0) {
-            if(strcmp($GLOBALS['REPUBLISH_TARGET'], $republishTarget->item(0)->nodeValue) !== 0) {
-                array_push($messages, "RepublishRequest->RepublishTarget misconfigured.");
-            }
-        } else {
-            array_push($messages, "RepublishRequest->RepublishTarget missing.");
-        }
-    }
-
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
-}
-
-/* validation function: check for HTTPS in URL addresses
- */
-function checkHTTPS($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
-    $xpath->registerNameSpace("mdui", "urn:oasis:names:tc:SAML:metadata:ui");
     $xpath->registerNameSpace("init", "urn:oasis:names:tc:SAML:profiles:SSO:request-init");
     $xpath->registerNameSpace("idpdisc", "urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol");
 
+    return $xpath;
+}
+
+/**
+ * isIDP() decides if an entity is an IdP or not.
+ */
+function isIDP($xpath) {
+    if($xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor")->length > 0)
+        return true;
+}
+
+/**
+ * checkHTTPS() validates that ALL URLs are HTTPS
+ */
+function checkHTTPS($xpath) {
     $URL = array();
+    $result = array();
 
     # /md:EntityDescriptor[@entityID]
     $entityID = $xpath->query("/md:EntityDescriptor");
@@ -507,29 +211,267 @@ function checkHTTPS($metadata) {
         $URL["AssertionConsumerService".$i] = $AssertionConsumerService->item($i)->getAttribute("Location");
     }
 
-    $messages = array();
     foreach($URL as $key => $value) {
         if(!preg_match("/https\:\/\//", $value)) {
-            array_push($messages, "HTTPS missing in $key.");
+            array_push($result, "HTTPS missing in $key.");
         }
     }
 
-    list($returncode, $message) = generateResult($messages);
-    return array($returncode, $message);
+    return $result;
 }
 
-/* validation function: AttributeAuthorityDescriptor[@protocolSupportEnumeration]
+/**
+ * checkRepublishRequest() validates republish requests to eduGAIN
  */
-function checkAAD($metadata) {
-    $doc = new DOMDocument();
-    $doc->load($metadata);
-    $xpath = new DOMXpath($doc);
-    $xpath->registerNameSpace("md", "urn:oasis:names:tc:SAML:2.0:metadata");
+function checkRepublishRequest($xpath) {
+    $result = array();
+
+    $republishRequestIDP = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/eduidmd:RepublishRequest");
+    $republishRequestSP  = $xpath->query("/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/eduidmd:RepublishRequest");
+    $republishRequest    = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest");
+    $republishTarget     = $xpath->query("/md:EntityDescriptor/md:Extensions/eduidmd:RepublishRequest/eduidmd:RepublishTarget");
+
+    if(($republishRequestSP->length > 0) or ($republishRequestIDP->length > 0)) {
+        array_push($result, "RepublishRequest placed incorrectly.");
+    } elseif($republishRequest->length > 0) {
+        if($republishTarget->length > 0) {
+            if(strcmp($GLOBALS['REPUBLISH_TARGET'], $republishTarget->item(0)->nodeValue) !== 0) {
+                array_push($result, "RepublishRequest->RepublishTarget misconfigured.");
+            }
+        } else {
+            array_push($result, "RepublishRequest->RepublishTarget missing.");
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * checkUIInfo() validates //mdui:UIInfo element
+ */
+function checkUIInfo($xpath) {
+    $result = array();
+
+    if(isIDP($xpath)) {
+        $SSODescriptor = 'IDPSSODescriptor';
+    } else {
+        $SSODescriptor = 'SPSSODescriptor';
+    }
+
+    $UIInfoDisplayNameCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="cs"]');
+    $UIInfoDisplayNameEN        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:DisplayName[@xml:lang="en"]');
+    $UIInfoDescriptionCS        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="cs"]');
+    $UIInfoDescriptionEN        = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Description[@xml:lang="en"]');
+    $UIInfoInformationURLCS     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
+    $UIInfoInformationURLEN     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
+    $UIInfoLogo                 = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Logo');
+    $UIInfoPrivacyStatementURL  = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL');
+
+    if($UIInfoDisplayNameCS->length !== 1)
+       array_push($result, "$SSODescriptor" . "->UIInfo->DisplayName/cs missing.");
+    if($UIInfoDisplayNameEN->length !== 1)
+       array_push($result, "$SSODescriptor" . "->UIInfo->DisplayName/en missing.");
+    if($UIInfoDescriptionCS->length !== 1)
+       array_push($result, "$SSODescriptor" . "->UIInfo->Description/cs missing.");
+    if($UIInfoDescriptionEN->length !== 1)
+       array_push($result, "$SSODescriptor" . "->UIInfo->Description/en missing.");
+    if($UIInfoInformationURLCS->length !== 1) {
+       array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs missing.");
+    } else {
+        foreach($UIInfoInformationURLCS as $url) {
+            @$file = file_get_contents($url->nodeValue);
+            if($http_response_header === NULL)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs could not be read.");
+            elseif(!$file)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs does not exist.");
+        }
+    }
+    if($UIInfoInformationURLEN->length !== 1) {
+        array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en missing.");
+    } else {
+        foreach($UIInfoInformationURLEN as $url) {
+            @$file = file_get_contents($url->nodeValue);
+            if($http_response_header === NULL)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en could not be read.");
+            elseif(!$file)
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en does not exist.");
+        }
+    }
+    if(isIDP($xpath)) {
+       if($UIInfoLogo->length < 1) {
+           array_push($result, "$SSODescriptor" . "->UIInfo->Logo missing.");
+       } else {
+           foreach($UIInfoLogo as $logo) {
+               @$file = file_get_contents($logo->nodeValue);
+               if($http_response_header === NULL) {
+                   array_push($result, "Logo $logo->nodeValue could not be downloaded (SSL error? Check www.ssllabs.com!).");
+               } elseif(!$file) {
+                   array_push($result, "Logo $logo->nodeValue does not exist.");
+               } else {
+                   if(!exif_imagetype($logo->nodeValue)) {
+                       $doc = new DOMDocument();
+                       $doc->load($logo->nodeValue);
+                       if(strcmp($doc->documentElement->nodeName, 'svg') !== 0)
+                           array_push($result, "Logo $logo->nodeValue is not an image.");
+                   }
+               }
+           }
+       }
+    }
+    if($UIInfoPrivacyStatementURL->length > 0) {
+        foreach($UIInfoPrivacyStatementURL as $url) {
+            @$file = file_get_contents($url->nodeValue);
+            if(@$http_response_header === NULL)
+                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" could not be accessed.");
+            elseif(!$file)
+                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" does not exist.");
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * checkCertificate() validates certificate's public key size and validity time
+ */
+function checkCertificate($xpath) {
+    $certsInfo  = array();
+    $result     = array();
+
+    $certificates = $xpath->query("//ds:X509Certificate");
+
+    if($certificates->length > 0) {
+        $certificate_number = 1;
+        foreach($certificates as $cert) {
+            $X509Certificate = "-----BEGIN CERTIFICATE-----\n" . trim ($cert->nodeValue) . "\n-----END CERTIFICATE-----";
+            $cert_info = openssl_x509_parse($X509Certificate, true);
+            if(is_array($cert_info)) {
+                $cert_validTo = date("Y-m-d", $cert_info["validTo_time_t"]);
+                $cert_validFor = floor((strtotime($cert_validTo)-time ())/(60*60*24));
+                $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
+                array_push($certsInfo, array($cert_validTo, $cert_validFor, $pub_key["bits"]));
+            } else {
+                array_push($result, "The certificate #$certificate_number is invalid.");
+            }
+            $certificate_number++;
+        }
+    } else {
+        array_push($result, "No certificate found.");
+    }
+
+    $certsResults = array_fill(0, count($certsInfo), array_fill(0, 2, null));
+    for($i=0; $i<count($certsInfo); $i++) {
+        if($certsInfo[$i][2] < $GLOBALS["CRT_KEY_SIZE"]) {
+            $certsResults[$i][0] = "Public key size must be at least " . $GLOBALS["CRT_KEY_SIZE"] . " bits. Yours is only " . $certsInfo[$i][2] . ".";
+        }
+
+        if($certsInfo[$i][1] < $GLOBALS["CRT_VALIDITY"]) {
+            $certsResults[$i][1] = "Certificate must be valid at least for " . $GLOBALS["CRT_VALIDITY"] . " days. Yours is " . $certsInfo[$i][1] . ".";
+        }
+    }
+
+    for($i=0; $i<count($certsResults); $i++) {
+        if($i%2 === 0) {
+            continue;
+        }
+
+        if(($certsResults[$i][0] !== null) || ($certsResults[$i][1] !== null)) {
+            foreach($certsResults[$i] as $m) {
+                array_push($result, $m);
+            }
+        }
+
+        if($certsResults[$i][0] !== null) {
+            foreach($certsResults[$i] as $m) {
+                array_push($result, $m);
+            }
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * checkScope() validates the <Scope> of an IdP
+ */
+function checkScope($xpath) {
+    $result = array();
+
+    $resultIDP = $xpath->query("/md:EntityDescriptor/md:IDPSSODescriptor/md:Extensions/shibmd:Scope");
+    $resultAA  = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:Extensions/shibmd:Scope");
+
+    if($resultIDP->length !== 1) {
+        array_push($result, "Precisely 1 IDPSSODescriptor->Scope required.");
+    }
+    if($resultAA->length > 1) {
+        array_push($result, "Either 0 or 1 AttributeAuthorityDescriptor->Scope allowed.");
+    }
+
+    return $result;
+}
+
+/**
+ * checkScopeRegexp() validates 'regexp="false"' for <Scope> element.
+ */
+function checkScopeRegexp($xpath) {
+    $result = array();
+
+    $scopes = $xpath->query("//shibmd:Scope[@regexp]");
+
+    $regexpValue = array();
+    if($scopes->length > 0) {
+        foreach($scopes as $s) {
+            array_push($regexpValue, $s->getAttribute("regexp"));
+        }
+    }
+
+    foreach($regexpValue as $regexp) {
+        if(strcmp($regexp, "false") !== 0) {
+            array_push($result, "Scope regexp must be \"false\".");
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * checkScopeValue() validates that <Scope> value is a substring of //EntityDescriptor[@entityID]
+ */
+function checkScopeValue($xpath) {
+    $result = array();
+
+    $entityDescriptor = $xpath->query("/md:EntityDescriptor");
+    $scopes = $xpath->query("//shibmd:Scope[@regexp]");
+
+    $entityID = $entityDescriptor->item(0)->getAttribute("entityID");
+    $pattern = '/https:\/\/([a-z0-9_\-\.]+)\/.*/i';
+    $replacement = '$1';
+    $hostname = preg_replace($pattern, $replacement, $entityID);
+
+    $scopeValue = array();
+    if($scopes->length > 0) {
+        foreach($scopes as $s) {
+            array_push($scopeValue, $s->nodeValue);
+        }
+    }
+
+    foreach($scopeValue as $scope) {
+        if(preg_match("/$scope/", $hostname) !== 1) {
+            array_push($result, "Scope value must be a substring of the entityID!");
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * checkAttributeAuthorityDescriptor() validates AttributeAuthorityDescriptor[@protocolSupportEnumeration]
+ */
+function checkAttributeAuthorityDescriptor($xpath) {
+    $result = array();
 
     $SAML2binding  = "urn:oasis:names:tc:SAML:2.0:bindings:SOAP";
     $SAML2protocol = "urn:oasis:names:tc:SAML:2.0:protocol";
-
-    $messages = array();
 
     $AttributeAuthorityDescriptor = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor");
 
@@ -540,7 +482,7 @@ function checkAAD($metadata) {
         for($i=0; $i<$AttributeService->length; $i++) {
             if(strcmp($AttributeService->item($i)->getAttribute("Binding"), $SAML2binding) === 0) {
                 if(!preg_match("/$SAML2protocol/", $protocols)) {
-                    array_push($messages, "SAML 2.0 binding requires SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration].");
+                    array_push($result, "SAML 2.0 binding requires SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration].");
                 }
             }
         }
@@ -553,102 +495,180 @@ function checkAAD($metadata) {
                 }
             }
             if($tmpResult < 1) {
-                    array_push($messages, "SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration] requires SAML 2.0 binding.");
+                    array_push($result, "SAML 2.0 token in AttributeAuthorityDescriptor[@protocolSupportEnumeration] requires SAML 2.0 binding.");
             }
         }
     }
 
-    list($returncode, $message) = generateResult($messages);
+    return $result;
+}
+
+/**
+ * checkOrganization() validates that <Organization> element is present.
+ */
+function checkOrganization($xpath) {
+    $result = array();
+
+    $organization = $xpath->query("/md:EntityDescriptor/md:Organization");
+
+    if($organization->length === 0)
+        array_push($result, "<Organization> element missing.");
+    else {
+        $organizationNameCS         = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang='cs']");
+        $organizationNameEN         = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang='en']");
+        $organizationDisplayNameCS  = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang='cs']");
+        $organizationDisplayNameEN  = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationDisplayName[@xml:lang='en']");
+        $organizationURLCS          = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang='cs']");
+        $organizationURLEN          = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationURL[@xml:lang='en']");
+
+        if($organizationNameCS->length === 0)
+            array_push($result, "Organization->OrganizationName/cs missing.");
+        if($organizationNameEN->length === 0)
+            array_push($result, "Organization->OrganizationName/en missing.");
+        if($organizationDisplayNameCS->length === 0)
+            array_push($result, "Organization->OrganizationDisplayName/cs missing.");
+        if($organizationDisplayNameEN->length === 0)
+            array_push($result, "Organization->OrganizationDisplayName/en missing");
+        if($organizationURLCS->length === 0) {
+            array_push($result, "Organization->OrganizationURL/cs missing.");
+        } else {
+            foreach($organizationURLCS as $url) {
+                @$file = file_get_contents($url->nodeValue);
+                if($http_response_header === NULL)
+                    array_push($result, "Organization->OrganizationURL/cs could not be read.");
+                elseif(!$file)
+                    array_push($result, "Organization->OrganizationURL/cs does not exist.");
+            }
+        }
+        if($organizationURLEN->length === 0) {
+            array_push($result, "Organization->OrganizationURL/en missing.");
+        } else {
+            foreach($organizationURLEN as $url) {
+                @$file = file_get_contents($url->nodeValue);
+                if($http_response_header === NULL)
+                    array_push($result, "Organization->OrganizationURL/en could not be read.");
+                elseif(!$file)
+                    array_push($result, "Organization->OrganizationURL/en does not exist.");
+            }
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * checkContactPerson() validates that at least one <ContactPerson> contains contactType='technical' attribute.
+ */
+function checkContactPerson($xpath) {
+    $result = array();
+
+    $contactPerson          = $xpath->query("/md:EntityDescriptor/md:ContactPerson");
+    $contactPersonTechnical = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@contactType='technical']");
+
+    if($contactPerson->length > 0) {
+        $i = 1;
+        foreach($contactPerson as $c) {
+            $email = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "EmailAddress");
+
+            if(!preg_match("/^mailto\:/", $email->item(0)->nodeValue))
+                array_push($result, "ContactPerson (" . $i . ")->EmailAddress doesn't contain \"mailto:\" scheme.");
+
+            $i++;
+        }
+    }
+
+    if($contactPersonTechnical->length < 1)
+        array_push($result, "ContactPerson/technical undefined.");
+    else {
+        $i = 1;
+        foreach($contactPersonTechnical as $c) {
+            $givenName = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "GivenName");
+            $sn        = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "SurName");
+            $email     = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "EmailAddress");
+
+            if(empty($givenName->item(0)->nodeValue))
+                array_push($result, "ContactPerson (" . $i . ")/technical->GivenName missing.");
+
+            if(empty($sn->item(0)->nodeValue))
+                array_push($result, "ContactPerson (" . $i . ")/technical->SurName missing.");
+
+            if(empty($email->item(0)->nodeValue))
+                array_push($result, "ContactPerson (" . $i . ")/technical->EmailAddress missing.");
+
+            $i++;
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * mergeResults() merges individual checks results.
+ */
+function mergeResults(&$results, $r) {
+    $results = array_merge($results, $r);
+    return $results;
+}
+
+/**
+ * generateResult() generates returncode and a possibly warning/error message.
+ */
+function generateResult($result) {
+    $message = null;
+
+    if(count($result) > 0) {
+        $returncode = 2;
+
+        foreach($result as $r)
+            $message .= $r . " ";
+    } else
+        $returncode = 0;
+
     return array($returncode, $message);
 }
 
-/* filename: metadata URL
+/**
+ * deleteMetadata() deletes metadata file.
  */
-$filename = !empty ($_GET["filename"]) ? $_GET["filename"] : 0;
-
-if (!$filename) {
-    writeXML(2, "No metadata URL defined using HTTP GET variable `filename'.");
-    exit;
+function deleteMetadata($file) {
+    if(!unlink($file))
+        throw new Exception("Metadata file couldn't be deleted.");
 }
-else {
-    if (!filter_var($filename, FILTER_VALIDATE_URL)) {
-        writeXML(2, "Invalid metadata URL supplied in HTTP GET variable `filename'.");
-        exit;
+
+/* -------------------------------------------------- */
+
+try {
+    checkTempDir($TMP_DIRECTORY);
+
+    $url    = getMetadataURL();
+    $file   = getMetadataFile($url);
+    $dom    = createDOM($file);
+    $xpath  = createXPath($dom);
+
+    $results = array();
+
+    mergeResults($results, checkHTTPS($xpath));
+    mergeResults($results, checkRepublishRequest($xpath));
+    mergeResults($results, checkUIInfo($xpath));
+    mergeResults($results, checkCertificate($xpath));
+    if(isIDP($xpath)) {
+        mergeResults($results, checkScope($xpath));
+        mergeResults($results, checkScopeRegexp($xpath));
+        mergeResults($results, checkScopeValue($xpath));
+        mergeResults($results, checkAttributeAuthorityDescriptor($xpath));
     }
+    mergeResults($results, checkOrganization($xpath));
+    mergeResults($results, checkContactPerson($xpath));
+
+    list($returncode, $message) = generateResult($results);
+    writeXML($returncode, $message);
+
+    deleteMetadata($file);
+} catch(Throwable $t) {
+    writeXML(2, "Caught Exception: " . $t->getMessage());
+    exit(2);
+} catch(Exception $e) {
+    writeXML(2, "Caught Exception: " . $e->getMessage());
+    exit(2);
 }
-
-/* fetch metadata
- */
-if(!file_exists($TMP_DIRECTORY) || !is_dir($TMP_DIRECTORY)) {
-    writeXML(2, "Create a `saml-validator/$TMP_DIRECTORY` directory writtable by a web-server user.");
-    exit;
-}
-$URLsplit = explode ("/", $filename);
-$encoded_entityid = $URLsplit[count($URLsplit)-2];
-$metadata = $TMP_DIRECTORY . $encoded_entityid . uniqid('-') . ".xml";
-
-!$md_content = @file_get_contents ("$filename");
-
-if (empty ($md_content)) {
-    writeXML(2, "Metadata file has no content.");
-    exit;
-} elseif (!$md_content) {
-    writeXML(2, "No metadata URL");
-    exit;
-} else {
-    file_put_contents ("$metadata", $md_content);
-}
-
-/* an array for storing validation results
- */
-$validations = array ();
-
-/* validate metadata and save results
- */
-$validations["validMetadata"] = validateSAML($metadata);
-if($validations["validMetadata"][0] === 0) {
-    if(isIDP($metadata)) {
-        $validations["scopeCheck"] = scopeCheck($metadata);
-        $validations["scopeRegexpCheck"] = scopeRegexpCheck($metadata);
-        $validations["scopeValueCheck"] = scopeValueCheck($metadata);
-        $validations["checkAAD"] = checkAAD($metadata);
-    }
-    $validations["certificateCheck"] = certificateCheck($metadata);
-    $validations["uiinfoCheck"] = uiinfoCheck($metadata);
-    $validations["organizationCheck"] = organizationCheck($metadata);
-    $validations["contactPersonTechnicalCheck"] = contactPersonTechnicalCheck($metadata);
-    $validations["checkRepublishRequest"] = checkRepublishRequest($metadata);
-    $validations["checkHTTPS"] = checkHTTPS($metadata);
-}
-
-/* delete downloaded metadata from $TMP_DIRECTORY
- */
-if(!empty($_GET["d"])) {
-    $delete     = $_GET["d"];
-    $filename   = $_GET["filename"];
-
-    if(filter_var($filename, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
-        if(strcmp($delete, "1") === 0) {
-            $DIR = rtrim($TMP_DIRECTORY, "/");
-            $file = preg_split("/$DIR\//", $filename);
-            $file = $TMP_DIRECTORY . $file[1];
-            exec("rm -f $file");
-        } else {
-            echo "Command not understood.";
-        }
-    } else {
-        echo "No proper URL address specified.";
-    }
-}
-
-/* get result and produce XML
- */
-list($returncode, $message) = filterResult($validations);
-writeXML($returncode, $message);
-
-/* delete temporary XML file with metadata
- */
-exec ("rm -f $metadata");
-
-?>
 
