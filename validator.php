@@ -89,7 +89,7 @@ function getMetadataFile($url) {
     if(empty($metadata))
         throw new Exception("Metadata file has no content.");
 
-    $file = $GLOBALS['TMP_DIRECTORY'] . time() . "-" . uniqid() . "-" . random_int(1000, 9999) . ".xml";
+    $file = $GLOBALS['TMP_DIRECTORY'] . time() . "-" . uniqid() . "-" . rand(1000, 9999) . ".xml";
     file_put_contents($file, $metadata);
 
     return $file;
