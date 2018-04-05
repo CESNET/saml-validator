@@ -54,6 +54,14 @@ function writeXML($returncode, $message = null) {
 }
 
 /**
+ * checkDependencies() checks for required PHP dependencies.
+ */
+function checkDependencies() {
+    if(!extension_loaded(xmlwriter))
+        throw new Exception("XMLwritter support not available.");
+}
+
+/**
  * checkTempDir() checks $TMP_DIRECTORY for existance and writtability.
  */
 function checkTempDir($dir) {
@@ -638,6 +646,7 @@ function deleteMetadata($file) {
 /* -------------------------------------------------- */
 
 try {
+    checkDependencies();
     checkTempDir($TMP_DIRECTORY);
 
     $url    = getMetadataURL();
