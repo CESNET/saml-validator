@@ -28,7 +28,7 @@ header("Content-Type: text/xml");
 /**
  * Variables
  */
-$TMP_DIRECTORY      = "tmp2/";
+$TMP_DIRECTORY      = "tmp/";
 $CRT_KEY_SIZE       = 2048;                     // certificate's public key size in bits
 $CRT_VALIDITY       = 30;                       // certificate's validity in days
 $REPUBLISH_TARGET   = "http://edugain.org/";
