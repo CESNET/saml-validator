@@ -9,7 +9,7 @@ $ALLOWED_FILE_TYPES = array("text/xml");
  * checkDependencies() checks for required PHP dependencies.
  */
 function checkDependencies() {
-    if(!extension_loaded(xmlwriter))
+    if(!extension_loaded("xmlwriter"))
         throw new Exception("XMLwritter support not available.");
 }
 
