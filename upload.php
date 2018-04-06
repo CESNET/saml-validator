@@ -5,6 +5,14 @@
 $UPLOAD_DIR         = "tmp/";
 $ALLOWED_FILE_TYPES = array("text/xml");
 
+/*
+ * checkDependencies() checks for required PHP dependencies.
+ */
+function checkDependencies() {
+    if(!extension_loaded(xmlwriter))
+        throw new Exception("XMLwritter support not available.");
+}
+
 /* checkUploadDir() checks for upload directory
  */
 function checkUploadDir($dir) {
@@ -88,6 +96,7 @@ function validateMetadata($metadata) {
 /* upload file and redirect to the SAML-validator
  */
 try {
+    checkDependencies();
     checkUploadDir($UPLOAD_DIR);
     validateMetadata(uploadFile(fileOrLink($_FILES["file"], $_POST["link"])));
 } catch(Exception $e) {
