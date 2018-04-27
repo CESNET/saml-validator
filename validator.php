@@ -289,7 +289,9 @@ function checkUIInfo($xpath) {
         foreach($UIInfoInformationURLCS as $url) {
             @$file = file_get_contents($url->nodeValue);
             if($http_response_header === NULL)
-                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs could not be read.");
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs could not be read due to no response by the server.");
+            elseif(preg_match('/403/', $http_response_header[0]))
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs could not be read due to " . $http_response_header[0] . ".");
             elseif(!$file)
                 array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs does not exist.");
         }
@@ -300,7 +302,9 @@ function checkUIInfo($xpath) {
         foreach($UIInfoInformationURLEN as $url) {
             @$file = file_get_contents($url->nodeValue);
             if($http_response_header === NULL)
-                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en could not be read.");
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en could not be read due to no response by the server.");
+            elseif(preg_match('/403/', $http_response_header[0]))
+                array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en could not be read due to " . $http_response_header[0] . ".");
             elseif(!$file)
                 array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en does not exist.");
         }
