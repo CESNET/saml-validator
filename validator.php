@@ -58,6 +58,12 @@ function writeXML($returncode, $message = null) {
 function checkDependencies() {
     if(!extension_loaded("xmlwriter"))
         throw new Exception("XMLwritter support not available.");
+
+    if(!extension_loaded("exif"))
+        throw new Exception("Exif support not available.");
+
+    if(!extension_loaded("gd"))
+        throw new Exception("GD support not available.");
 }
 
 /**
