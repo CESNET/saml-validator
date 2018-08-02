@@ -153,6 +153,20 @@ function createXPath($dom) {
 }
 
 /**
+ * getSkipCheck() checks for tests to be skipped in $_GET["skipCheck"].
+ */
+function getSkipCheck() {
+    if(!empty($_GET["skipCheck"])) {
+        $flags = array('flags' => FILTER_FLAG_STRIP_LOW |
+                                  FILTER_FLAG_STRIP_HIGH |
+                                  FILTER_FLAG_STRIP_BACKTICK);
+        $skipCheck = filter_input(INPUT_GET, 'skipCheck', FILTER_SANITIZE_STRING, $flags);
+
+        return explode(",", $skipCheck);
+    }
+}
+
+/**
  * isIDP() decides if an entity is an IdP or not.
  */
 function isIDP($xpath) {
@@ -658,6 +672,8 @@ try {
     $dom    = createDOM($file);
     $xpath  = createXPath($dom);
 
+    $skipCheck = getSkipCheck();
+
     $results = array();
 
     mergeResults($results, checkHTTPS($xpath));
@@ -667,7 +683,9 @@ try {
     if(isIDP($xpath)) {
         mergeResults($results, checkScope($xpath));
         mergeResults($results, checkScopeRegexp($xpath));
-        mergeResults($results, checkScopeValue($xpath));
+        if(!in_array("checkScopeValue", $skipCheck)) {
+            mergeResults($results, checkScopeValue($xpath));
+        }
         mergeResults($results, checkAttributeAuthorityDescriptor($xpath));
     }
     mergeResults($results, checkOrganization($xpath));
