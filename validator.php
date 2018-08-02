@@ -163,6 +163,8 @@ function getSkipCheck() {
 
         return explode(",", $skipCheck);
     }
+
+    return array();
 }
 
 /**
