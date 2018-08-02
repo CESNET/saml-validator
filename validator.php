@@ -7,7 +7,7 @@
  *
  * SAML-validator is written by Jan Oppolzer [3] from CESNET [4] and all the
  * validation checks ensure that metadata is compatible with the Czech
- * academic identity federation eduID.cz [5] as well as testing federation
+ * academic identity federation eduID.cz [5] as well as the testing federation
  * czTestFed [6].
  *
  * [1] https://github.com/JanOppolzer/saml-validator
@@ -23,7 +23,6 @@
  * Set Content-Type to text/xml.
  */
 header("Content-Type: text/xml");
-#echo "<pre>";
 
 /**
  * Variables
