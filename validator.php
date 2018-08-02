@@ -342,10 +342,10 @@ function checkUIInfo($xpath) {
                        $md_height  = $logo->getAttribute("height");
 
                        if($img_width != $md_width) {
-                            array_push($result, "Logo $logo->nodeValue has a different 'width' ($img_width) than defined in metadata ($md_width).");
+                            array_push($result, "Logo $logo->nodeValue has a different 'width' ($img_width px) than defined in metadata ($md_width px).");
                        }
                        if($img_height != $md_height) {
-                            array_push($result, "Logo $logo->nodeValue has a different 'height' ($img_height) than defined in metadata ($md_height).");
+                            array_push($result, "Logo $logo->nodeValue has a different 'height' ($img_height px) than defined in metadata ($md_height px).");
                        }
                    }
                    if(!exif_imagetype($logo->nodeValue)) {
