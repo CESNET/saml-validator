@@ -334,6 +334,20 @@ function checkUIInfo($xpath) {
                } elseif(!$file) {
                    array_push($result, "Logo $logo->nodeValue does not exist.");
                } else {
+                   if(exif_imagetype($logo->nodeValue)) {
+                       $imagesize  = getimagesize($logo->nodeValue);
+                       $img_width  = $imagesize[0];
+                       $img_height = $imagesize[1];
+                       $md_width   = $logo->getAttribute("width");
+                       $md_height  = $logo->getAttribute("height");
+
+                       if($img_width != $md_width) {
+                            array_push($result, "Logo $logo->nodeValue has a different 'width' ($img_width) than defined in metadata ($md_width).");
+                       }
+                       if($img_height != $md_height) {
+                            array_push($result, "Logo $logo->nodeValue has a different 'height' ($img_height) than defined in metadata ($md_height).");
+                       }
+                   }
                    if(!exif_imagetype($logo->nodeValue)) {
                        $doc = new DOMDocument();
                        $doc->load($logo->nodeValue);
