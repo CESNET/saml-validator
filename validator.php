@@ -368,8 +368,10 @@ function checkUIInfo($xpath) {
     if($UIInfoPrivacyStatementURL->length > 0) {
         foreach($UIInfoPrivacyStatementURL as $url) {
             @$file = file_get_contents($url->nodeValue);
-            if(@$http_response_header === NULL)
-                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" could not be accessed.");
+            if($http_response_header === NULL)
+                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" could not be read (SSL error? Check www.ssllabs.com).");
+            elseif(preg_match('/403/', $http_response_header[0]))
+                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" could not be read due to " . $http_response_header[0] . ".");
             elseif(!$file)
                 array_push($result, "PrivacyStatementURL \"$url->nodeValue\" does not exist.");
         }
