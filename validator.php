@@ -276,6 +276,25 @@ function checkRepublishRequest($xpath) {
 }
 
 /**
+ * checkURLaddress() checks element's URL address for existence and reachability.
+ */
+function checkURLaddress($element) {
+    $result = false;
+
+    foreach($element as $e) {
+        @$file = file_get_contents($e->nodeValue);
+        if($http_response_header === NULL)
+            $result = $e->parentNode->nodeName . "->" . $e->nodeName . "/" . $e->getAttribute("xml:lang") . " couldn't be read.";
+        elseif(preg_match("/403|404|500/", $http_response_header[0]))
+            $result = $e->parentNode->nodeName . "->" . $e->nodeName . "/" . $e->getAttribute("xml:lang") . " couldn't be read due to " . $http_response_header[0] . " return code.";
+        elseif(!$file)
+            $result = $e->parentNode->nodeName . "->" . $e->nodeName . "/" . $e->getAttribute("xml:lang") . " doesn't exist.";
+    }
+
+    return $result;
+}
+
+/**
  * checkUIInfo() validates //mdui:UIInfo element
  */
 function checkUIInfo($xpath) {
@@ -581,24 +600,14 @@ function checkOrganization($xpath) {
         if($organizationURLCS->length === 0) {
             array_push($result, "Organization->OrganizationURL/cs missing.");
         } else {
-            foreach($organizationURLCS as $url) {
-                @$file = file_get_contents($url->nodeValue);
-                if($http_response_header === NULL)
-                    array_push($result, "Organization->OrganizationURL/cs could not be read.");
-                elseif(!$file)
-                    array_push($result, "Organization->OrganizationURL/cs does not exist.");
-            }
+            $r = checkURLaddress($organizationURLCS);
+            if($r) array_push($result, $r);
         }
         if($organizationURLEN->length === 0) {
             array_push($result, "Organization->OrganizationURL/en missing.");
         } else {
-            foreach($organizationURLEN as $url) {
-                @$file = file_get_contents($url->nodeValue);
-                if($http_response_header === NULL)
-                    array_push($result, "Organization->OrganizationURL/en could not be read.");
-                elseif(!$file)
-                    array_push($result, "Organization->OrganizationURL/en does not exist.");
-            }
+            $r = checkURLaddress($organizationURLEN);
+            if($r) array_push($result, $r);
         }
     }
 
