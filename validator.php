@@ -313,7 +313,8 @@ function checkUIInfo($xpath) {
     $UIInfoInformationURLCS     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="cs"]');
     $UIInfoInformationURLEN     = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:InformationURL[@xml:lang="en"]');
     $UIInfoLogo                 = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:Logo');
-    $UIInfoPrivacyStatementURL  = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL');
+    $UIInfoPrivacyStatementURLCS= $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="cs"]');
+    $UIInfoPrivacyStatementURLEN= $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="en"]');
 
     if($UIInfoDisplayNameCS->length !== 1)
        array_push($result, "$SSODescriptor" . "->UIInfo->DisplayName/cs missing.");
@@ -370,16 +371,13 @@ function checkUIInfo($xpath) {
            }
        }
     }
-    if($UIInfoPrivacyStatementURL->length > 0) {
-        foreach($UIInfoPrivacyStatementURL as $url) {
-            @$file = file_get_contents($url->nodeValue);
-            if($http_response_header === NULL)
-                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" could not be read (SSL error? Check www.ssllabs.com).");
-            elseif(preg_match('/403/', $http_response_header[0]))
-                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" could not be read due to " . $http_response_header[0] . ".");
-            elseif(!$file)
-                array_push($result, "PrivacyStatementURL \"$url->nodeValue\" does not exist.");
-        }
+    if($UIInfoPrivacyStatementURLCS->length > 0) {
+        $r = checkURLaddress($UIInfoPrivacyStatementURLCS);
+        if($r) array_push($result, $r);
+    }
+    if($UIInfoPrivacyStatementURLEN->length > 0) {
+        $r = checkURLaddress($UIInfoPrivacyStatementURLEN);
+        if($r) array_push($result, $r);
     }
 
     return $result;
