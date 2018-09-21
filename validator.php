@@ -31,11 +31,14 @@ $TMP_DIRECTORY      = "tmp/";
 $CRT_KEY_SIZE       = 2048;                     // certificate's public key size in bits
 $CRT_VALIDITY       = 30;                       // certificate's validity in days
 $REPUBLISH_TARGET   = "http://edugain.org/";
+$EC_RS              = "http://refeds.org/category/research-and-scholarship";
+$EC_COCO_1          = "http://www.geant.net/uri/dataprotection-code-of-conduct/v1";
+$EC_SIRTFI          = "https://refeds.org/sirtfi";
 
 /**
  * writeXML() function composes a resulting XML document.
  */
-function writeXML($returncode, $message = null) {
+function writeXML($returncode, $message = null, $warning = null) {
     $xml = new XMLWriter();
 
     $xml->openURI("php://output");
@@ -46,6 +49,7 @@ function writeXML($returncode, $message = null) {
     $xml->startElement("validation");
     $xml->writeElement("returncode", $returncode);
     $xml->writeElement("message", $message);
+    $xml->writeElement("warning", $warning);
     $xml->endElement();
     $xml->endDocument();
 
@@ -153,6 +157,9 @@ function createXPath($dom) {
     $xpath->registerNameSpace("eduidmd", "http://eduid.cz/schema/metadata/1.0");
     $xpath->registerNameSpace("init", "urn:oasis:names:tc:SAML:profiles:SSO:request-init");
     $xpath->registerNameSpace("idpdisc", "urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol");
+    $xpath->registerNameSpace("mdattr", "urn:oasis:names:tc:SAML:metadata:attribute");
+    $xpath->registerNameSpace("saml", "urn:oasis:names:tc:SAML:2.0:assertion");
+    $xpath->registerNameSpace("remd", "http://refeds.org/metadata");
 
     return $xpath;
 }
@@ -645,7 +652,73 @@ function checkContactPerson($xpath) {
 }
 
 /**
- * mergeResults() merges individual checks results.
+ * checkEC() validates SIRTFI and CoCo (v1 only so far) and warns if R&S (so we
+ * can check the requirements).
+ */
+function checkEC($xpath) {
+    $result = array();
+    $warnings = array();
+
+    $EC = $xpath->query("//mdattr:EntityAttributes/saml:Attribute");
+
+    if($EC->length > 0) {
+
+        $i = 1;
+        foreach($EC as $category) {
+            $value = $category->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "AttributeValue");
+
+            if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_RS"]) === 0) {
+                array_push($warnings, "R&S application.");
+            }
+
+            if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_COCO_1"]) === 0) {
+
+                if(isIDP($xpath)) {
+                    $SSODescriptor = 'IDPSSODescriptor';
+                } else {
+                    $SSODescriptor = 'SPSSODescriptor';
+                }
+
+                $PrivacyStatementURLCS = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="cs"]');
+                $PrivacyStatementURLEN = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="en"]');
+
+                if($PrivacyStatementURLCS->length === 0)
+                    array_push($result, "$SSODescriptor" . "->UIInfo->PrivacyStatementURL/cs missing.");
+
+                if($PrivacyStatementURLEN->length === 0)
+                    array_push($result, "$SSODescriptor" . "->UIInfo->PrivacyStatementURL/en missing.");
+
+            }
+
+            if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_SIRTFI"]) === 0) {
+
+                $sirtfi_contact = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@remd:contactType='http://refeds.org/metadata/contactType/security']");
+
+                if($sirtfi_contact->length === 1) {
+
+                    foreach($sirtfi_contact as $c) {
+                        $givenName  = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "GivenName");
+                        $email      = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "EmailAddress");
+
+                        if(empty($givenName->item(0)->nodeValue))
+                            array_push($result, "SIRTFI contact missing GivenName.");
+
+                        if(empty($email->item(0)->nodeValue))
+                            array_push($result, "SIRTFI contact missing EmailAddress.");
+                    }
+
+                } else {
+                    array_push($result, "SIRTFI defined, but contact missing.");
+                }
+            }
+        }
+    }
+
+    return array($result, $warnings);
+}
+
+/**
+ * mergeResults() merges individual check results.
  */
 function mergeResults(&$results, $r) {
     $results = array_merge($results, $r);
@@ -653,7 +726,15 @@ function mergeResults(&$results, $r) {
 }
 
 /**
- * generateResult() generates returncode and a possibly warning/error message.
+ * mergeWarnings() merges individual check warnings.
+ */
+function mergeWarnings(&$warnings, $w) {
+    $warnings = array_merge($warnings, $w);
+    return $warnings;
+}
+
+/**
+ * generateResult() generates returncode and a possible error message.
  */
 function generateResult($result) {
     $message = null;
@@ -667,6 +748,19 @@ function generateResult($result) {
         $returncode = 0;
 
     return array($returncode, $message);
+}
+
+/**
+ * generateWarnings() generates a possible warning message.
+ */
+function generateWarnings($warnings) {
+    $warning = null;
+
+    foreach($warnings as $w) {
+        $warning .= $w . " ";
+    }
+
+    return $warning;
 }
 
 /**
@@ -691,6 +785,7 @@ try {
     $skipCheck = getSkipCheck();
 
     $results = array();
+    $warnings = array();
 
     mergeResults($results, checkHTTPS($xpath));
     mergeResults($results, checkRepublishRequest($xpath));
@@ -707,8 +802,13 @@ try {
     mergeResults($results, checkOrganization($xpath));
     mergeResults($results, checkContactPerson($xpath));
 
+
+    list($resultEC, $warningsEC) = checkEC($xpath);
+    mergeResults($results, $resultEC);
+    mergeWarnings($warnings, $warningsEC);
+
     list($returncode, $message) = generateResult($results);
-    writeXML($returncode, $message);
+    writeXML($returncode, $message, generateWarnings($warnings));
 
     deleteMetadata($file);
 } catch(Throwable $t) {
