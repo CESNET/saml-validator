@@ -672,6 +672,7 @@ function checkEC($xpath) {
             }
 
             if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_COCO_1"]) === 0) {
+                array_push($warnings, "CoCo v1 application.");
 
                 if(isIDP($xpath)) {
                     $SSODescriptor = 'IDPSSODescriptor';
@@ -691,6 +692,7 @@ function checkEC($xpath) {
             }
 
             if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_SIRTFI"]) === 0) {
+                array_push($warnings, "SIRTFI application.");
 
                 $sirtfi_contact = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@remd:contactType='http://refeds.org/metadata/contactType/security']");
 
