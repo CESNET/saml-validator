@@ -696,7 +696,7 @@ function checkEC($xpath) {
 
                 $sirtfi_contact = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@remd:contactType='http://refeds.org/metadata/contactType/security']");
 
-                if($sirtfi_contact->length === 1) {
+                if($sirtfi_contact->length >= 1) {
 
                     foreach($sirtfi_contact as $c) {
                         $givenName  = $c->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:metadata", "GivenName");
