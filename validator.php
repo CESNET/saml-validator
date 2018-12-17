@@ -692,8 +692,6 @@ function checkEC($xpath) {
             }
 
             if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_SIRTFI"]) === 0) {
-                array_push($warnings, "SIRTFI application.");
-
                 $sirtfi_contact = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@remd:contactType='http://refeds.org/metadata/contactType/security']");
 
                 if($sirtfi_contact->length >= 1) {
@@ -707,6 +705,8 @@ function checkEC($xpath) {
 
                         if(empty($email->item(0)->nodeValue))
                             array_push($result, "SIRTFI contact missing EmailAddress.");
+                        else
+                            array_push($warnings, "SIRTFI application (" . preg_replace('/mailto:/', '', $email->item(0)->nodeValue) . "). ");
                     }
 
                 } else {
