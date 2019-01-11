@@ -666,29 +666,36 @@ function checkEC($xpath) {
         $i = 1;
         foreach($EC as $category) {
             $value = $category->getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:assertion", "AttributeValue");
+            #print_r($value->length);
 
-            if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_RS"]) === 0) {
-                array_push($warnings, "R&S application.");
-            }
+            if($value->length > 0) {
 
-            if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_COCO_1"]) === 0) {
-                array_push($warnings, "CoCo v1 application.");
+                $j = 0;
+                foreach($value as $v) {
+                    #print_r($value->item($j)->nodeValue);
 
-                if(isIDP($xpath)) {
-                    $SSODescriptor = 'IDPSSODescriptor';
-                } else {
-                    $SSODescriptor = 'SPSSODescriptor';
+                    if(strcmp($value->item($j)->nodeValue, $GLOBALS["EC_RS"]) === 0) {
+                        array_push($warnings, "R&S application.");
+                    }
+
+                    if(strcmp($value->item($j)->nodeValue, $GLOBALS["EC_COCO_1"]) === 0) {
+                        array_push($warnings, "CoCo v1 application.");
+
+                        if(!isIDP($xpath)) {
+                            $PrivacyStatementURLCS = $xpath->query('/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="cs"]');
+                            $PrivacyStatementURLEN = $xpath->query('/md:EntityDescriptor/md:SPSSODescriptor/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="en"]');
+
+                            if($PrivacyStatementURLCS->length === 0)
+                                array_push($result, "$SSODescriptor" . "->UIInfo->PrivacyStatementURL/cs missing.");
+
+                            if($PrivacyStatementURLEN->length === 0)
+                                array_push($result, "$SSODescriptor" . "->UIInfo->PrivacyStatementURL/en missing.");
+                        }
+
+                    }
+
+                    $j++;
                 }
-
-                $PrivacyStatementURLCS = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="cs"]');
-                $PrivacyStatementURLEN = $xpath->query('/md:EntityDescriptor/md:'.$SSODescriptor.'/md:Extensions/mdui:UIInfo/mdui:PrivacyStatementURL[@xml:lang="en"]');
-
-                if($PrivacyStatementURLCS->length === 0)
-                    array_push($result, "$SSODescriptor" . "->UIInfo->PrivacyStatementURL/cs missing.");
-
-                if($PrivacyStatementURLEN->length === 0)
-                    array_push($result, "$SSODescriptor" . "->UIInfo->PrivacyStatementURL/en missing.");
-
             }
 
             if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_SIRTFI"]) === 0) {
