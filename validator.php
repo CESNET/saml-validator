@@ -295,7 +295,7 @@ function checkURLaddress($element) {
         elseif(preg_match("/403|404|500/", $http_response_header[0]))
             $result = $e->parentNode->nodeName . "->" . $e->nodeName . "/" . $e->getAttribute("xml:lang") . " couldn't be read due to " . $http_response_header[0] . " return code.";
         elseif(!$file)
-            $result = $e->parentNode->nodeName . "->" . $e->nodeName . "/" . $e->getAttribute("xml:lang") . " doesn't exist.";
+            $result = $e->parentNode->nodeName . "->" . $e->nodeName . "/" . $e->getAttribute("xml:lang") . " failed to load.";
     }
 
     return $result;
