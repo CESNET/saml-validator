@@ -1,28 +1,5 @@
-body {
-    background-color: #fff;
-    color: #333;
-    font-size: 100%;
-    margin: 1em;
-}
-
 code {
-    background-color: #ddd;
-    font-size: 100%;
-}
-
-form {
-    border: 1px solid #999;
-    padding: 1em;
-    margin-bottom: 1em;
-    width: 40em;
-}
-
-footer {
-    font-size: 75%;
-    border-top: #333 1px solid;
-}
-
-.hidden {
-    display: none;
+    font-size: small;
+    word-wrap: break-word;
 }
 
