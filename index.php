@@ -118,15 +118,15 @@
                                     <fieldset>
                                         <legend>Validate SAML metadata</legend>
                                         <div class="form-group">
-                                            <label class="col-sm-3 control-label" for="file">Choose metadata file:</label>
-                                            <div class="col-sm-9">
-                                                <input type="file" accept="text/xml" name="file" id="file">
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
                                             <label class="col-sm-3 control-label" for="link">Insert metadata URL:</label>
                                             <div class="col-sm-9">
                                                 <input type="url" name="link" id="link" style="width: 100%" placeholder="URL address must be HTTPS">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="file">Choose metadata file:</label>
+                                            <div class="col-sm-9">
+                                                <input type="file" accept="text/xml" name="file" id="file">
                                             </div>
                                         </div>
                                         <div class="form-group">
