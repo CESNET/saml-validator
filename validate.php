@@ -97,7 +97,7 @@ try {
             $metadata = $remoteMetadata;
     }
 
-    include "./validator-new.php";
+    include "./validator.php";
 
 } catch(Throwable $t) {
     echo "Caught Exception: ", $t->getMessage(), "\n";
