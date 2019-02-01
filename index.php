@@ -147,7 +147,7 @@
                             <p>
                                 <strong>Tip:</strong> Default metadata location:
                             </p>
-                            <ul>
+                            <ul class="metadata-tip">
                                 <li>Shibboleth IdP: <code>https://example.org/idp/shibboleth</code></li>
                                 <li>Shibboleth SP: <code>https://example.org/Shibboleth.sso/Metadata</code></li>
                                 <li>SimpleSAMLphp: <code>https://example.org/simplesaml/module.php/saml/sp/metadata.php/default-sp</code></li>
