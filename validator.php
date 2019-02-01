@@ -3,7 +3,7 @@
 /**
  * SAML-validator [1] is a utility to validate SAML metadata for SAML Identity
  * Federation and cooperates nicely with a web-based metadata management system
- * Jagger [2].
+ * MetaMan [2].
  *
  * SAML-validator is written by Jan Oppolzer [3] from CESNET [4] and all the
  * validation checks ensure that metadata is compatible with the Czech
@@ -11,7 +11,7 @@
  * czTestFed [6].
  *
  * [1] https://github.com/JanOppolzer/saml-validator
- * [2] https://jagger.heanet.ie
+ * [2] https://github.com/JanOppolzer/metaman
  * [3] jan@oppolzer.cz
  * [4] https://www.cesnet.cz
  * [5] https://www.eduid.cz
@@ -20,96 +20,37 @@
  */
 
 /**
- * Set Content-Type to text/xml.
- */
-header("Content-Type: text/xml");
-
-/**
  * Variables
  */
-$TMP_DIRECTORY      = "tmp/";
 $CRT_KEY_SIZE       = 2048;                     // certificate's public key size in bits
 $CRT_VALIDITY       = 30;                       // certificate's validity in days
 $REPUBLISH_TARGET   = "http://edugain.org/";
 $EC_RS              = "http://refeds.org/category/research-and-scholarship";
 $EC_COCO_1          = "http://www.geant.net/uri/dataprotection-code-of-conduct/v1";
 $EC_SIRTFI          = "https://refeds.org/sirtfi";
+$RESULT_EXCEPTION   = 100;
 
 /**
- * writeXML() function composes a resulting XML document.
+ * validationResult() returns the result of all the validations. If warnings
+ * and errors occured, they are displayed.
  */
-function writeXML($returncode, $message = null, $warning = null) {
-    $xml = new XMLWriter();
-
-    $xml->openURI("php://output");
-    $xml->setIndent(true);
-    $xml->setIndentString("  ");
-
-    $xml->startDocument("1.0", "utf-8");
-    $xml->startElement("validation");
-    $xml->writeElement("returncode", $returncode);
-    $xml->writeElement("message", $message);
-    $xml->writeElement("warning", $warning);
-    $xml->endElement();
-    $xml->endDocument();
-
-    $xml->flush();
+# FIXME: Move to appropriate location.
+# FIXME: Maybe rename just to result()?
+function validationResult($result, $error = null, $warning = null) {
+    if($warning)    echo "WARNING: " . $warning . "\n";
+    if($error)      echo "ERROR: "   . $error   . "\n";
+                    echo "RESULT: "  . $result  . "\n";
 }
 
 /**
  * checkDependencies() checks for required PHP dependencies.
  */
 function checkDependencies() {
-    if(!extension_loaded("xmlwriter"))
-        throw new Exception("XMLwritter support not available.");
-
     if(!extension_loaded("exif"))
         throw new Exception("Exif support not available.");
 
     if(!extension_loaded("gd"))
         throw new Exception("GD support not available.");
-}
-
-/**
- * checkTempDir() checks $TMP_DIRECTORY for existance and writtability.
- */
-function checkTempDir($dir) {
-    if(!file_exists($dir) || !is_dir($dir))
-        throw new Exception(dirname(__FILE__) . "/" . $dir . " directory doesn't exists.");
-
-    if(!is_writable($dir))
-        throw new Exception(dirname(__FILE__) . "/" . $dir . " directory isn't writtable.");
-}
-
-/**
- * getMetadataURL() checks for proper URL address in $_GET["filename"].
- */
-function getMetadataURL() {
-    if(empty($_GET["filename"]))
-        throw new Exception("No metadata URL defined using HTTP GET variable `filename`.");
-
-    $filename = $_GET["filename"];
-    if(!filter_var($filename, FILTER_VALIDATE_URL))
-        throw new Exception("Invalid metadata URL supplied in HTTP GET variable `filename`.");
-    elseif(!preg_match("/^https\:\/\//", $filename))
-        throw new Exception("Metadata URL supplied in HTTP GET variable `filename` must be HTTPS.");
-    else
-        return $filename;
-}
-
-/**
- * getMetadataFile() fetches metadata.
- */
-function getMetadataFile($url) {
-    $metadata = file_get_contents($url);
-
-    if(empty($metadata))
-        throw new Exception("Metadata file has no content.");
-
-    $file = $GLOBALS['TMP_DIRECTORY'] . time() . "-" . uniqid() . "-" . rand(1000, 9999) . ".xml";
-    file_put_contents($file, $metadata);
-
-    return $file;
 }
 
 /**
@@ -135,7 +76,10 @@ function createDOM($xml) {
     libxml_use_internal_errors(true);
 
     $dom = new DOMDocument();
-    $dom->load($xml);
+    $metadata = @file_get_contents($xml);
+    if(!$metadata)
+        throw new Exception("Metadata couldn't be read.");
+    $dom->loadXML($metadata);
 
     if(!$dom->schemaValidate("xsd/saml-schema-metadata-2.0.xsd") or
        !$dom->schemaValidate("xsd/sstc-saml-metadata-ui-v1.0.xsd"))
@@ -167,6 +111,7 @@ function createXPath($dom) {
 /**
  * getSkipCheck() checks for tests to be skipped in $_GET["skipCheck"].
  */
+# FIXME: Test WEB (works) & CLI (ignore or argv[]?)
 function getSkipCheck() {
     if(!empty($_GET["skipCheck"])) {
         $flags = array('flags' => FILTER_FLAG_STRIP_LOW |
@@ -772,23 +717,20 @@ function generateWarnings($warnings) {
     return $warning;
 }
 
-/**
- * deleteMetadata() deletes metadata file.
- */
-function deleteMetadata($file) {
-    if(!unlink($file))
-        throw new Exception("Metadata file couldn't be deleted.");
-}
-
 /* -------------------------------------------------- */
 
 try {
-    checkDependencies();
-    checkTempDir($TMP_DIRECTORY);
+    $localFile = !empty($argv[1]) ? $argv[1] : false;
+    $remoteFile = !empty($link) ? $link : false;
 
-    $url    = getMetadataURL();
-    $file   = getMetadataFile($url);
-    $dom    = createDOM($file);
+    if(!empty($localFile))
+        $metadata = $localFile;
+    elseif(!empty($remoteFile))
+        $metadata = $remoteFile;
+
+    checkDependencies();
+
+    $dom    = createDOM($metadata);
     $xpath  = createXPath($dom);
 
     $skipCheck = getSkipCheck();
@@ -817,14 +759,15 @@ try {
     mergeWarnings($warnings, $warningsEC);
 
     list($returncode, $message) = generateResult($results);
-    writeXML($returncode, $message, generateWarnings($warnings));
+    validationResult($returncode, $message, generateWarnings($warnings));
+    exit($returncode);
 
-    deleteMetadata($file);
 } catch(Throwable $t) {
-    writeXML(2, "Caught Exception: " . $t->getMessage());
-    exit(2);
+    validationResult($RESULT_EXCEPTION, "Caught Exception: " . $t->getMessage());
+    exit($RESULT_EXCEPTION);
+
 } catch(Exception $e) {
-    writeXML(2, "Caught Exception: " . $e->getMessage());
-    exit(2);
+    validationResult($RESULT_EXCEPTION, "Caught Exception: " . $e->getMessage());
+    exit($RESULT_EXCEPTION);
 }
 
