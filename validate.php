@@ -3,7 +3,6 @@
 /**
  * Variables.
  */
-$TMP_DIR       = "tmp/";
 $ALLOWED_MIMES = array("text/xml");
 
 /**
@@ -38,17 +37,6 @@ function validateURL($url) {
         throw new Exception("Metadata URL defined in HTTP GET variable `link` must be HTTPS.");
 
     return $url;
-}
-
-/**
- * checkTmpDir() checks for a temporary directory defined in $TMP_DIR.
- */
-function checkTmpDir($dir) {
-    if(!file_exists($dir) || !is_dir($dir))
-        throw new Exception($dir . " directory doesn't exist.");
-
-    if(!is_writable($dir))
-        throw new Exception($dir . " directory isn't writtable by web server.");
 }
 
 /**
@@ -87,8 +75,6 @@ try {
     }
 
     if(isPost()) {
-        checkTmpDir($TMP_DIR);
-
         $remoteMetadata = linkOrFile($_POST["link"], $_FILES["file"]);
 
         if(is_array($remoteMetadata))
