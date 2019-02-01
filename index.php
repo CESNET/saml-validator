@@ -120,7 +120,7 @@
                                         <div class="form-group">
                                             <label class="col-sm-3 control-label" for="link">Insert metadata URL:</label>
                                             <div class="col-sm-9">
-                                                <input type="url" name="link" id="link" style="width: 100%" placeholder="URL address must be HTTPS">
+                                                <input type="url" name="link" id="link" style="width: 100%" placeholder="URL address must be HTTPS" autofocus>
                                             </div>
                                         </div>
                                         <div class="form-group">
