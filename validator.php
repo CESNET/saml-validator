@@ -31,6 +31,10 @@ $EC_SIRTFI          = "https://refeds.org/sirtfi";
 $RESULT_EXCEPTION   = 100;
 
 /**
+ */
+require_once("./functions.php");
+
+/**
  * validationResult() returns the result of all the validations. If warnings
  * and errors occured, they are displayed.
  */
@@ -719,55 +723,55 @@ function generateWarnings($warnings) {
 
 /* -------------------------------------------------- */
 
-try {
-    $localFile = !empty($argv[1]) ? $argv[1] : false;
-    $remoteFile = !empty($link) ? $link : false;
+/**
+ */
+function validateMetadata($metadata, $cli = false) {
+    try {
+        checkDependencies();
 
-    if(!empty($localFile))
-        $metadata = $localFile;
-    elseif(!empty($remoteFile))
-        $metadata = $remoteFile;
+        $dom    = createDOM($metadata);
+        $xpath  = createXPath($dom);
 
-    checkDependencies();
+        $skipCheck = getSkipCheck();
 
-    $dom    = createDOM($metadata);
-    $xpath  = createXPath($dom);
+        $results = array();
+        $warnings = array();
 
-    $skipCheck = getSkipCheck();
-
-    $results = array();
-    $warnings = array();
-
-    mergeResults($results, checkHTTPS($xpath));
-    mergeResults($results, checkRepublishRequest($xpath));
-    mergeResults($results, checkUIInfo($xpath));
-    mergeResults($results, checkCertificate($xpath));
-    if(isIDP($xpath)) {
-        mergeResults($results, checkScope($xpath));
-        mergeResults($results, checkScopeRegexp($xpath));
-        if(!in_array("checkScopeValue", $skipCheck)) {
-            mergeResults($results, checkScopeValue($xpath));
+        mergeResults($results, checkHTTPS($xpath));
+        mergeResults($results, checkRepublishRequest($xpath));
+        mergeResults($results, checkUIInfo($xpath));
+        mergeResults($results, checkCertificate($xpath));
+        if(isIDP($xpath)) {
+            mergeResults($results, checkScope($xpath));
+            mergeResults($results, checkScopeRegexp($xpath));
+            if(!in_array("checkScopeValue", $skipCheck)) {
+                mergeResults($results, checkScopeValue($xpath));
+            }
+            mergeResults($results, checkAttributeAuthorityDescriptor($xpath));
         }
-        mergeResults($results, checkAttributeAuthorityDescriptor($xpath));
+        mergeResults($results, checkOrganization($xpath));
+        mergeResults($results, checkContactPerson($xpath));
+
+
+        list($resultEC, $warningsEC) = checkEC($xpath);
+        mergeResults($results, $resultEC);
+        mergeWarnings($warnings, $warningsEC);
+
+        list($returncode, $message) = generateResult($results);
+        validationResult($returncode, $message, generateWarnings($warnings));
+
+        if($cli)
+            exit($returncode);
+
+    } catch(Throwable $t) {
+        global $RESULT_EXCEPTION;
+        validationResult($RESULT_EXCEPTION, "Caught Exception: " . $t->getMessage());
+        exit($RESULT_EXCEPTION);
+
+    } catch(Exception $e) {
+        global $RESULT_EXCEPTION;
+        validationResult($RESULT_EXCEPTION, "Caught Exception: " . $e->getMessage());
+        exit($RESULT_EXCEPTION);
     }
-    mergeResults($results, checkOrganization($xpath));
-    mergeResults($results, checkContactPerson($xpath));
-
-
-    list($resultEC, $warningsEC) = checkEC($xpath);
-    mergeResults($results, $resultEC);
-    mergeWarnings($warnings, $warningsEC);
-
-    list($returncode, $message) = generateResult($results);
-    validationResult($returncode, $message, generateWarnings($warnings));
-    exit($returncode);
-
-} catch(Throwable $t) {
-    validationResult($RESULT_EXCEPTION, "Caught Exception: " . $t->getMessage());
-    exit($RESULT_EXCEPTION);
-
-} catch(Exception $e) {
-    validationResult($RESULT_EXCEPTION, "Caught Exception: " . $e->getMessage());
-    exit($RESULT_EXCEPTION);
 }
 

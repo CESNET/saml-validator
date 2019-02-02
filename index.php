@@ -1,3 +1,9 @@
+<?php
+
+require_once("./functions.php");
+require_once("./validator.php");
+
+?>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
@@ -95,26 +101,25 @@
                     <p>You can either upload a metadata file or insert a metadata URL address in
                     the form bellow and click <em>Validate metadata</em> button to get result.</p>
 
+<?php if(isPost()): ?>
                     <div class="row">
                       <div class="col-lg-12">
                         <div class="bs-component">
                           <div class="alert alert-warning">
                             <p>
-                                <strong>Warning:</strong> Since the primary use of this tool is to assist <a
-                                href="https://rr.cesnet.cz/jagger/">Jagger</a> to decide whether the metadata
-                                is valid or not, you will be redirected to a new XML-only page and in order to
-                                test another metadata, you will have to click <em>Back</em> button in your web
-                                browser.
+                                <strong>Validation result:</strong> 
+<?php validateMetadata(getMetadata()); ?>
                             </p>
                           </div>
                         </div>
                       </div>
                     </div>
+<?php endif; ?>
 
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="well bs-component">
-                                <form class="form-horizontal" action="./validate.php" method="post" enctype="multipart/form-data">
+                                <form class="form-horizontal" action="." method="post" enctype="multipart/form-data">
                                     <fieldset>
                                         <legend>Validate SAML metadata</legend>
                                         <div class="form-group">

@@ -34,4 +34,5 @@ if(!is_file($file)) {
  * Validate the metadata and exit with error code '0' if everything's OK.
  */
 include_once './validator.php';
+validateMetadata($file, $cli = true);
 
