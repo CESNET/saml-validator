@@ -103,19 +103,21 @@ require_once("./validator.php");
 
 <?php if(isPost()): ?>
 <?php
-$result = validateMetadata(getMetadata());
-$alertType = "danger";
-switch($result["result"]) {
-    case 0:
-        $alertType = "success";
-        break;
-    case 1:
-        $alertType = "warning";
-        break;
-    case 2:
-        $alertType = "danger";
-        break;
-}
+
+try {
+    $result = validateMetadata(getMetadata());
+    $alertType = "danger";
+    switch($result["result"]) {
+        case 0:
+            $alertType = "success";
+            break;
+        case 1:
+            $alertType = "warning";
+            break;
+        case 2:
+            $alertType = "danger";
+            break;
+    }
 ?>
                     <div class="row">
                       <div class="col-lg-12">
@@ -139,6 +141,14 @@ if(!empty($result["error"]))
                         </div>
                       </div>
                     </div>
+<?php
+} catch(Throwable $t) {
+    echo "<p><strong>Caught Exception: ", $t->getMessage(), "</strong></p>\n";
+} catch(Exception $e) {
+    echo "<p><strong>Caught Exception: ", $e->getMessage(), "</strong></p>\n";
+}
+
+?>
 <?php endif; ?>
 
                     <div class="row">
