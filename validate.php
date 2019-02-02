@@ -6,11 +6,6 @@
 require_once("./functions.php");
 
 /**
- * Variables.
- */
-$ALLOWED_MIMES = array("text/xml");
-
-/**
  * All the magic validate.php does is executed here.
  */
 try {
