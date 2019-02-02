@@ -31,6 +31,7 @@ $EC_SIRTFI          = "https://refeds.org/sirtfi";
 $RESULT_EXCEPTION   = 100;
 
 /**
+ * Import helpers, etc.
  */
 require_once("./functions.php");
 
@@ -44,6 +45,33 @@ function validationResult($result, $error = null, $warning = null) {
     if($warning)    echo "WARNING: " . $warning . "\n";
     if($error)      echo "ERROR: "   . $error   . "\n";
                     echo "RESULT: "  . $result  . "\n";
+}
+
+/**
+ * FIXME
+ */
+function validationResultHTML($result, $error = null, $warning = null) {
+    $arr = array();
+    $arr["result"] = $result;
+
+    switch($result) {
+        case 0:
+            $arr["resultText"] = "Congratulations, metadata is valid.";
+            break;
+        case 1:
+            $arr["resultText"] = "Metadata is valid, but there are some warnings.";
+            break;
+        case 2:
+            $arr["resultText"] = "Unfortunately, this metadata is invalid.";
+    }
+
+    if(!is_null($error))
+        $arr["error"] = $error;
+
+    if(!is_null($warning))
+        $arr["warning"] = $warning;
+
+    return $arr;
 }
 
 /**
@@ -758,10 +786,13 @@ function validateMetadata($metadata, $cli = false) {
         mergeWarnings($warnings, $warningsEC);
 
         list($returncode, $message) = generateResult($results);
-        validationResult($returncode, $message, generateWarnings($warnings));
 
-        if($cli)
+        if(!$cli) {
+            return validationResultHTML($returncode, $message, generateWarnings($warnings));
+        } else {
+            validationResult($returncode, $message, generateWarnings($warnings));
             exit($returncode);
+        }
 
     } catch(Throwable $t) {
         global $RESULT_EXCEPTION;

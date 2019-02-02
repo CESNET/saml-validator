@@ -102,13 +102,38 @@ require_once("./validator.php");
                     the form bellow and click <em>Validate metadata</em> button to get result.</p>
 
 <?php if(isPost()): ?>
+<?php
+$result = validateMetadata(getMetadata());
+$alertType = "danger";
+switch($result["result"]) {
+    case 0:
+        $alertType = "success";
+        break;
+    case 1:
+        $alertType = "warning";
+        break;
+    case 2:
+        $alertType = "danger";
+        break;
+}
+?>
                     <div class="row">
                       <div class="col-lg-12">
                         <div class="bs-component">
-                          <div class="alert alert-warning">
+                          <div class="alert alert-<?=$alertType?>">
                             <p>
-                                <strong>Validation result:</strong> 
-<?php validateMetadata(getMetadata()); ?>
+                                <strong>Validation result:</strong> <em><?=$result["resultText"]?></em>
+                            </p>
+                            <p>
+<?php
+
+if(!empty($result["warning"]))
+    echo $result["warning"];
+
+if(!empty($result["error"]))
+    echo $result["error"];
+
+?>
                             </p>
                           </div>
                         </div>

@@ -10,9 +10,16 @@ require_once("./validator.php");
  * All the magic validate.php does is executed here.
  */
 try {
+    $result = validateMetadata(getMetadata());
     echo "<pre>";
 
-    validateMetadata(getMetadata());
+    if(!empty($result["warning"]))
+        echo "WARNING: ", $result["warning"], "\n";
+
+    if(!empty($result["error"]))
+        echo "ERROR: ", $result["error"], "\n";
+
+    echo "RESULT: ", $result["result"];
 
 } catch(Throwable $t) {
     echo "Caught Exception: ", $t->getMessage(), "\n";

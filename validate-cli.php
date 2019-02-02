@@ -1,10 +1,16 @@
 <?php
 
 /**
+ * Import helpers, etc.
+ */
+require_once("./functions.php");
+require_once("./validator.php");
+
+/**
  * We need a metadata file to validate as the first CLI argument. Additional
  * arguments are ignored.
  */
-$file = !empty($argv[1]) ? $argv[1] : false;
+$file = getVariable($argv[1]);
 
 /**
  * If there's no CLI argument, exit with error code '1'.
@@ -33,6 +39,5 @@ if(!is_file($file)) {
 /**
  * Validate the metadata and exit with error code '0' if everything's OK.
  */
-include_once './validator.php';
 validateMetadata($file, $cli = true);
 
