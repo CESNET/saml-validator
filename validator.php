@@ -548,7 +548,7 @@ function checkOrganization($xpath) {
     $organization = $xpath->query("/md:EntityDescriptor/md:Organization");
 
     if($organization->length === 0)
-        array_push($result, "<Organization> element missing.");
+        array_push($result, "Organization element missing.");
     else {
         $organizationNameCS         = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang='cs']");
         $organizationNameEN         = $xpath->query("/md:EntityDescriptor/md:Organization/md:OrganizationName[@xml:lang='en']");
