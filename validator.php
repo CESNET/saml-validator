@@ -33,7 +33,7 @@ $RESULT_EXCEPTION   = 100;
 /**
  * Import helpers, etc.
  */
-require_once("./functions.php");
+require_once(dirname(__FILE__) . "/functions.php");
 
 /**
  * validationResult() returns the result of all the validations. If warnings
@@ -113,8 +113,8 @@ function createDOM($xml) {
         throw new Exception("Metadata couldn't be read.");
     $dom->loadXML($metadata);
 
-    if(!$dom->schemaValidate("xsd/saml-schema-metadata-2.0.xsd") or
-       !$dom->schemaValidate("xsd/sstc-saml-metadata-ui-v1.0.xsd"))
+    if(!$dom->schemaValidate(dirname(__FILE__) . "/xsd/saml-schema-metadata-2.0.xsd") or
+       !$dom->schemaValidate(dirname(__FILE__) . "/xsd/sstc-saml-metadata-ui-v1.0.xsd"))
         throw new Exception(libxml_display_errors());
 
     return $dom;

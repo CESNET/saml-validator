@@ -3,14 +3,14 @@
 /**
  * Import helpers, etc.
  */
-require_once("./functions.php");
-require_once("./validator.php");
+require_once(dirname(__FILE__) . "/functions.php");
+require_once(dirname(__FILE__) . "/validator.php");
 
 /**
  * We need a metadata file to validate as the first CLI argument. Additional
  * arguments are ignored.
  */
-$file = getVariable($argv[1]);
+$file = @getVariable($argv[1]);
 
 /**
  * If there's no CLI argument, exit with error code '1'.

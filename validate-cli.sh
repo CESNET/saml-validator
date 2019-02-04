@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-php -q -f validate-cli.php -- $@
+php -q -f $(dirname $0)/validate-cli.php -- $@
 ERR=$?
 
 if [ $ERR -ne 0 ]; then

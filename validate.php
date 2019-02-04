@@ -3,8 +3,8 @@
 /**
  * Require statements.
  */
-require_once("./functions.php");
-require_once("./validator.php");
+require_once(dirname(__FILE__) . "/functions.php");
+require_once(dirname(__FILE__) . "/validator.php");
 
 /**
  * All the magic validate.php does is executed here.

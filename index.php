@@ -1,7 +1,7 @@
 <?php
 
-require_once("./functions.php");
-require_once("./validator.php");
+require_once(dirname(__FILE__) . "/functions.php");
+require_once(dirname(__FILE__) . "/validator.php");
 
 ?>
 <!DOCTYPE html>
