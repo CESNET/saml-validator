@@ -7,6 +7,12 @@ require_once(dirname(__FILE__) . "/functions.php");
 require_once(dirname(__FILE__) . "/validator.php");
 
 /**
+ * This file is not intended to be run from a web server, CLI only.
+ */
+if(@isGet())
+    exit();
+
+/**
  * We need a metadata file to validate as the first CLI argument. Additional
  * arguments are ignored.
  */
