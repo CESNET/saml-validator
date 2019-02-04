@@ -11,13 +11,12 @@ require_once("./validator.php");
  */
 try {
     $result = validateMetadata(getMetadata());
-    echo "<pre>";
 
     if(!empty($result["warning"]))
-        echo "WARNING: ", $result["warning"], "\n";
+        echo "WARNING: ", $result["warning"], "<br>\n";
 
     if(!empty($result["error"]))
-        echo "ERROR: ", $result["error"], "\n";
+        echo "ERROR: ", $result["error"], "<br>\n";
 
     echo "RESULT: ", $result["result"];
 
