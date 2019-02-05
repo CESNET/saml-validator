@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
-php -q -f $(dirname $0)/validate-cli.php -- $@
-ERR=$?
+if [ -z $1 ]; then
+    cat - | php -q -f $(dirname $0)/validate-cli.php
+    ERR=$?
+else
+    php -q -f $(dirname $0)/validate-cli.php -- $1
+    ERR=$?
+fi
 
 if [ $ERR -ne 0 ]; then
     echo -e "\nAn error occured."

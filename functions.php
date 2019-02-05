@@ -42,6 +42,19 @@ function getVariable($var) {
 }
 
 /**
+ * getStdin() return standard input or false.
+ */
+function getStdin() {
+    $input  = false;
+    $infile = fopen("php://stdin", "r");
+
+    while(!feof($infile))
+        $input = $input . fgets($infile, 4096);
+
+    return $input;
+}
+
+/**
  * getMetadata() returns a link to metadata (either in $_POST["link"] or
  * $_GET["link"]) or a metadata file ($_FILES["file"]).
  */

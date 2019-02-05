@@ -103,12 +103,19 @@ function libxml_display_errors() {
 
 /**
  * createDOM() creates a DOM object.
+ * $xml   = XML document to parse
+ * $stdin = true (XML document from stdin) or false (XML document from URL)
  */
-function createDOM($xml) {
+function createDOM($xml, $stdin = false) {
     libxml_use_internal_errors(true);
 
     $dom = new DOMDocument();
-    $metadata = @file_get_contents($xml);
+
+    if($stdin)
+        $metadata = $xml;
+    else
+        $metadata = @file_get_contents($xml);
+
     if(!$metadata)
         throw new Exception("Metadata couldn't be read.");
     $dom->loadXML($metadata);
@@ -753,11 +760,11 @@ function generateWarnings($warnings) {
 
 /**
  */
-function validateMetadata($metadata, $cli = false) {
+function validateMetadata($metadata, $cli = false, $stdin = false) {
     try {
         checkDependencies();
 
-        $dom    = createDOM($metadata);
+        $dom    = createDOM($metadata, $stdin);
         $xpath  = createXPath($dom);
 
         $skipCheck = getSkipCheck();
