@@ -478,7 +478,8 @@ function checkScopeRegexp($xpath) {
 }
 
 /**
- * checkScopeValue() validates that <Scope> value is a substring of //EntityDescriptor[@entityID]
+ * checkScopeValue() validates that <Scope> value is a substring of
+ * //EntityDescriptor[@entityID] and also in lowercase
  */
 function checkScopeValue($xpath) {
     $result = array();
@@ -487,7 +488,7 @@ function checkScopeValue($xpath) {
     $scopes = $xpath->query("//shibmd:Scope[@regexp]");
 
     $entityID = $entityDescriptor->item(0)->getAttribute("entityID");
-    $pattern = '/https:\/\/([a-z0-9_\-\.]+)\/.*/i';
+    $pattern = '/https:\/\/([a-z0-9_\-\.]+)\/.*/';
     $replacement = '$1';
     $hostname = preg_replace($pattern, $replacement, $entityID);
 
@@ -500,7 +501,7 @@ function checkScopeValue($xpath) {
 
     foreach($scopeValue as $scope) {
         if(preg_match("/$scope/", $hostname) !== 1) {
-            array_push($result, "Scope value must be a substring of the entityID!");
+            array_push($result, "Scope value must be a lowercase substring of the entityID!");
         }
     }
 
