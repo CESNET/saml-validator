@@ -675,11 +675,11 @@ function checkEC($xpath) {
                 foreach($value as $v) {
                     #print_r($value->item($j)->nodeValue);
 
-                    if(strcmp($value->item($j)->nodeValue, $GLOBALS["EC_RS"]) === 0) {
+                    if(strcmp(trim($value->item($j)->nodeValue), $GLOBALS["EC_RS"]) === 0) {
                         array_push($warnings, "R&S application.");
                     }
 
-                    if(strcmp($value->item($j)->nodeValue, $GLOBALS["EC_COCO_1"]) === 0) {
+                    if(strcmp(trim($value->item($j)->nodeValue), $GLOBALS["EC_COCO_1"]) === 0) {
                         array_push($warnings, "CoCo v1 application.");
 
                         if(!isIDP($xpath)) {
@@ -699,7 +699,7 @@ function checkEC($xpath) {
                 }
             }
 
-            if(strcmp($value->item(0)->nodeValue, $GLOBALS["EC_SIRTFI"]) === 0) {
+            if(strcmp(trim($value->item(0)->nodeValue), $GLOBALS["EC_SIRTFI"]) === 0) {
                 $sirtfi_contact = $xpath->query("/md:EntityDescriptor/md:ContactPerson[@remd:contactType='http://refeds.org/metadata/contactType/security']");
 
                 if($sirtfi_contact->length >= 1) {
