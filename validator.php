@@ -444,10 +444,10 @@ function checkScope($xpath) {
     $resultAA  = $xpath->query("/md:EntityDescriptor/md:AttributeAuthorityDescriptor/md:Extensions/shibmd:Scope");
 
     if($resultIDP->length !== 1) {
-        array_push($result, "Precisely 1 IDPSSODescriptor->Scope required.");
+        array_push($result, "Precisely 1 IDPSSODescriptor->Scope should be defined.");
     }
     if($resultAA->length > 1) {
-        array_push($result, "Either 0 or 1 AttributeAuthorityDescriptor->Scope allowed.");
+        array_push($result, "Either 0 or 1 AttributeAuthorityDescriptor->Scope should be defined.");
     }
 
     return $result;
@@ -501,7 +501,7 @@ function checkScopeValue($xpath) {
 
     foreach($scopeValue as $scope) {
         if(preg_match("/$scope/", $hostname) !== 1) {
-            array_push($result, "Scope value must be a lowercase substring of the entityID!");
+            array_push($result, "Scope value ($scope) should be a lowercase substring of the entityID ($entityID)!");
         }
     }
 
@@ -774,14 +774,14 @@ function validateMetadata($metadata, $cli = false, $stdin = false) {
         $warnings = array();
 
         mergeResults($results, checkHTTPS($xpath));
-        mergeResults($results, checkRepublishRequest($xpath));
+        mergeWarnings($warnings, checkRepublishRequest($xpath));
         mergeResults($results, checkUIInfo($xpath));
         mergeResults($results, checkCertificate($xpath));
         if(isIDP($xpath)) {
-            mergeResults($results, checkScope($xpath));
-            mergeResults($results, checkScopeRegexp($xpath));
+            mergeWarnings($warnings, checkScope($xpath));
+            mergeWarnings($warnings, checkScopeRegexp($xpath));
             if(!in_array("checkScopeValue", $skipCheck)) {
-                mergeResults($results, checkScopeValue($xpath));
+                mergeWarnings($warnings, checkScopeValue($xpath));
             }
             mergeResults($results, checkAttributeAuthorityDescriptor($xpath));
         }
