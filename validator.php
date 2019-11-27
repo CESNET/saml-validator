@@ -775,7 +775,7 @@ function validateMetadata($metadata, $cli = false, $stdin = false) {
 
         mergeResults($results, checkHTTPS($xpath));
         mergeWarnings($warnings, checkRepublishRequest($xpath));
-        mergeResults($results, checkUIInfo($xpath));
+        mergeResults($warnings, checkUIInfo($xpath));
         mergeResults($results, checkCertificate($xpath));
         if(isIDP($xpath)) {
             mergeWarnings($warnings, checkScope($xpath));
