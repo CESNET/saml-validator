@@ -331,18 +331,10 @@ function checkUIInfo($xpath) {
        array_push($result, "$SSODescriptor" . "->UIInfo->Description/cs missing.");
     if($UIInfoDescriptionEN->length !== 1)
        array_push($result, "$SSODescriptor" . "->UIInfo->Description/en missing.");
-    if($UIInfoInformationURLCS->length !== 1) {
+    if($UIInfoInformationURLCS->length !== 1)
        array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/cs missing.");
-    } else {
-        $r = checkURLaddress($UIInfoInformationURLCS);
-        if($r) array_push($result, $r);
-    }
-    if($UIInfoInformationURLEN->length !== 1) {
+    if($UIInfoInformationURLEN->length !== 1)
         array_push($result, "$SSODescriptor" . "->UIInfo->InformationURL/en missing.");
-    } else {
-        $r = checkURLaddress($UIInfoInformationURLEN);
-        if($r) array_push($result, $r);
-    }
     if(isIDP($xpath)) {
        if($UIInfoLogo->length < 1) {
            array_push($result, "$SSODescriptor" . "->UIInfo->Logo missing.");
