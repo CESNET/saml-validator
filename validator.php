@@ -589,18 +589,10 @@ function checkOrganization($xpath) {
             array_push($result, "Organization->OrganizationDisplayName/cs missing.");
         if($organizationDisplayNameEN->length === 0)
             array_push($result, "Organization->OrganizationDisplayName/en missing");
-        if($organizationURLCS->length === 0) {
+        if($organizationURLCS->length === 0)
             array_push($result, "Organization->OrganizationURL/cs missing.");
-        } else {
-            $r = checkURLaddress($organizationURLCS);
-            if($r) array_push($result, $r);
-        }
-        if($organizationURLEN->length === 0) {
+        if($organizationURLEN->length === 0)
             array_push($result, "Organization->OrganizationURL/en missing.");
-        } else {
-            $r = checkURLaddress($organizationURLEN);
-            if($r) array_push($result, $r);
-        }
     }
 
     return $result;
