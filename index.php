@@ -225,16 +225,13 @@ if(!empty($result["error"]))
                     <div class="col col-sm-4">
                         <h2>Kontakt</h2>
                         CESNET, z. s. p. o.<br/>
-                        ZIKOVA 4, 16000 PRAHA <br/>
-                        TEL : +420 224 352 994<br/>
-                        FAX : +420 224 320 269<br/>
+                        Zikova 4, 16000 Praha 6<br/>
                         <a href="mailto:info@cesnet.cz">info@cesnet.cz</a>
                     </div>
                     <div class="col col-sm-4">
                         <h2>Stálá služba</h2>
-                        TEL: +420 224 352 994<br/>
+                        Tel: +420 234 680 222<br/>
                         GSM: +420 602 252 531<br/>
-                        FAX: +420 224 313 211<br/>
                         <a href="mailto:support@cesnet.cz">support@cesnet.cz</a>
                     </div>
                 </div>
