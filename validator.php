@@ -120,6 +120,16 @@ function createDOM($xml, $stdin = false) {
         throw new Exception("Metadata couldn't be read.");
     $dom->loadXML($metadata);
 
+    $result = null;
+    foreach(libxml_get_errors() as $error)
+    {
+        $result .= "Error on line {$error->line}: " . trim($error->message) . ". ";
+    }
+    if(!is_null($result))
+    {
+        throw new Exception($result);
+    }
+
     if(!$dom->schemaValidate(dirname(__FILE__) . "/xsd/saml-schema-metadata-2.0.xsd") or
        !$dom->schemaValidate(dirname(__FILE__) . "/xsd/sstc-saml-metadata-ui-v1.0.xsd"))
         throw new Exception(libxml_display_errors());
