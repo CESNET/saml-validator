@@ -283,7 +283,7 @@ function checkURLaddress($element) {
     $result = false;
 
     foreach($element as $e) {
-        @$file = file_get_contents($e->nodeValue);
+        @$file = file_get_contents(trim($e->nodeValue));
         if($http_response_header === NULL)
             $result = $e->parentNode->nodeName . "->" . $e->nodeName . "/" . $e->getAttribute("xml:lang") . " couldn't be read (SSL error? Check www.ssllabs.com).";
         elseif(preg_match("/403|404|500/", $http_response_header[0]))
