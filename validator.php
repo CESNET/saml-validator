@@ -22,7 +22,8 @@
 /**
  * Variables
  */
-$CRT_KEY_SIZE       = 2048;                     // certificate's public key size in bits
+$CRT_KEY_SIZE_RSA   = 2048;                     // certificate's public key size in bits (RSA)
+$CRT_KEY_SIZE_EC    = 384;                      // certificate's public key size in bits (EC)
 $CRT_VALIDITY       = 30;                       // certificate's validity in days
 $REPUBLISH_TARGET   = "http://edugain.org/";
 $EC_RS              = "http://refeds.org/category/research-and-scholarship";
@@ -394,7 +395,9 @@ function checkCertificate($xpath) {
                 $cert_validTo = date("Y-m-d", $cert_info["validTo_time_t"]);
                 $cert_validFor = floor((strtotime($cert_validTo)-time ())/(60*60*24));
                 $pub_key = openssl_pkey_get_details(openssl_pkey_get_public($X509Certificate));
-                array_push($certsInfo, array($cert_validTo, $cert_validFor, $pub_key["bits"]));
+                $algorithm = array_key_exists('rsa', $pub_key) ? 'rsa' : null;
+                $algorithm = array_key_exists('ec', $pub_key) ? 'ec' : $algorithm;
+                array_push($certsInfo, array($cert_validTo, $cert_validFor, $pub_key["bits"], $algorithm));
             } else {
                 array_push($result, "The certificate #$certificate_number is invalid.");
             }
@@ -406,8 +409,12 @@ function checkCertificate($xpath) {
 
     $certsResults = array_fill(0, count($certsInfo), array_fill(0, 2, null));
     for($i=0; $i<count($certsInfo); $i++) {
-        if($certsInfo[$i][2] < $GLOBALS["CRT_KEY_SIZE"]) {
-            $certsResults[$i][0] = "Public key size must be at least " . $GLOBALS["CRT_KEY_SIZE"] . " bits. Yours is only " . $certsInfo[$i][2] . ".";
+        if($certsInfo[$i][3] === 'rsa' && $certsInfo[$i][2] < $GLOBALS["CRT_KEY_SIZE_RSA"]) {
+            $certsResults[$i][0] = "RSA public key size must be at least " . $GLOBALS["CRT_KEY_SIZE_RSA"] . " bits. Yours is only " . $certsInfo[$i][2] . ".";
+        }
+
+        if($certsInfo[$i][3] === 'ec' && $certsInfo[$i][2] < $GLOBALS["CRT_KEY_SIZE_EC"]) {
+            $certsResults[$i][0] = "EC public key size must be at least " . $GLOBALS["CRT_KEY_SIZE_EC"] . " bits. Yours is only " . $certsInfo[$i][2] . ".";
         }
 
         if($certsInfo[$i][1] < $GLOBALS["CRT_VALIDITY"]) {
