@@ -341,6 +341,14 @@ function checkUIInfo($xpath) {
                } elseif(!$file) {
                    array_push($result, "Logo $logo->nodeValue does not exist.");
                } else {
+                   if(str_ends_with($logo->nodeValue, '.svg')) {
+                       $doc = new \DOMDocument();
+                       $doc->load($logo->nodeValue);
+                       if(strcmp($doc->documentElement->nodeName, 'svg') !== 0) {
+                           array_push($result, "Logo $logo->nodeValue is not an image.");
+                       }
+                       return;
+                   }
                    if(exif_imagetype($logo->nodeValue)) {
                        $imagesize  = getimagesize($logo->nodeValue);
                        $img_width  = $imagesize[0];
@@ -354,12 +362,6 @@ function checkUIInfo($xpath) {
                        if($img_height != $md_height) {
                             array_push($result, "Logo $logo->nodeValue has a different height ($img_height px) than defined in metadata ($md_height px).");
                        }
-                   }
-                   if(!exif_imagetype($logo->nodeValue)) {
-                       $doc = new DOMDocument();
-                       $doc->load($logo->nodeValue);
-                       if(strcmp($doc->documentElement->nodeName, 'svg') !== 0)
-                           array_push($result, "Logo $logo->nodeValue is not an image.");
                    }
                }
            }
