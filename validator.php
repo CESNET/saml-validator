@@ -341,7 +341,7 @@ function checkUIInfo($xpath) {
                } elseif(!$file) {
                    array_push($result, "Logo $logo->nodeValue does not exist.");
                } else {
-                   if(str_ends_with($logo->nodeValue, '.svg')) {
+                   if(strpos($logo->nodeValue, '.svg')) {
                        $doc = new \DOMDocument();
                        $doc->load($logo->nodeValue);
                        if(strcmp($doc->documentElement->nodeName, 'svg') !== 0) {
