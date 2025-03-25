@@ -24,7 +24,7 @@
  */
 $CRT_KEY_SIZE_RSA   = 2048;                     // certificate's public key size in bits (RSA)
 $CRT_KEY_SIZE_EC    = 384;                      // certificate's public key size in bits (EC)
-$CRT_VALIDITY       = 30;                       // certificate's validity in days
+// $CRT_VALIDITY       = 30;                       // certificate's validity in days
 $REPUBLISH_TARGET   = "http://edugain.org/";
 $EC_RS              = "http://refeds.org/category/research-and-scholarship";
 $EC_COCO_1          = "http://www.geant.net/uri/dataprotection-code-of-conduct/v1";
@@ -419,9 +419,9 @@ function checkCertificate($xpath) {
             $certsResults[$i][0] = "EC public key size must be at least " . $GLOBALS["CRT_KEY_SIZE_EC"] . " bits. Yours is only " . $certsInfo[$i][2] . ".";
         }
 
-        if($certsInfo[$i][1] < $GLOBALS["CRT_VALIDITY"]) {
-            $certsResults[$i][1] = "Certificate must be valid at least for " . $GLOBALS["CRT_VALIDITY"] . " days. Yours is " . $certsInfo[$i][1] . ".";
-        }
+        // if($certsInfo[$i][1] < $GLOBALS["CRT_VALIDITY"]) {
+        //     $certsResults[$i][1] = "Certificate must be valid at least for " . $GLOBALS["CRT_VALIDITY"] . " days. Yours is " . $certsInfo[$i][1] . ".";
+        // }
     }
 
     for($i=0; $i<count($certsResults); $i++) {
